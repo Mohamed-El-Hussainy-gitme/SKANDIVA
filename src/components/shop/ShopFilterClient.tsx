@@ -89,59 +89,52 @@ export const ShopFilterClient: React.FC<ShopFilterClientProps> = ({ initialProdu
         </div>
       </div>
 
-      {/* Products Grid */}
+      {/* Products Grid — Clean & Borderless (Fanins Style) */}
       {filtered.length === 0 ? (
-        <div className="p-16 text-center bg-white border border-stone space-y-2">
+        <div className="p-16 text-center bg-white/60 border border-stone space-y-2">
           <p className="font-serif text-xl text-ink">Inga möbler matchade din sökning</p>
           <p className="text-xs font-mono text-ink/60">Prova att återställa filter eller söka på ett annat sökord.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-10">
           {filtered.map((product) => (
             <Link
               key={product.id}
               href={`/butik/${product.slug}`}
-              className="group bg-white border border-stone hover:border-wood transition-all p-4 space-y-4 shadow-sm hover:shadow-md flex flex-col justify-between"
+              className="group flex flex-col space-y-3"
             >
-              <div className="space-y-3">
-                <div className="relative aspect-[4/3] w-full bg-[#F6F3ED] overflow-hidden border border-stone/40">
-                  <Image
-                    src={product.primaryImage}
-                    alt={product.name}
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                  {product.stockStatus === "sald" ? (
-                    <div className="absolute top-2 left-2 bg-ink/90 text-canvas font-mono text-[10px] uppercase px-2.5 py-1 font-bold shadow-md">
-                      Såld
-                    </div>
-                  ) : product.conditionGrade ? (
-                    <div className="absolute top-2 left-2">
-                      <ConditionBadge grade={product.conditionGrade} />
-                    </div>
-                  ) : null}
-                </div>
-
-                <div>
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-wood font-semibold block">
-                    {product.designer}
-                  </span>
-                  <h3 className="font-serif text-lg font-medium text-ink group-hover:text-wood transition-colors mt-0.5">
-                    {product.name}
-                  </h3>
-                  <p className="text-xs text-ink/70 font-sans line-clamp-2 mt-1">
-                    {product.description}
-                  </p>
-                </div>
+              {/* Product Image on Clean Background without outer card borders */}
+              <div className="relative aspect-[4/5] sm:aspect-square w-full bg-white/70 overflow-hidden flex items-center justify-center p-2">
+                <Image
+                  src={product.primaryImage}
+                  alt={product.name}
+                  fill
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                />
+                {product.stockStatus === "sald" ? (
+                  <div className="absolute top-2 left-2 bg-ink/90 text-canvas font-mono text-[10px] uppercase px-2 py-0.5 font-bold shadow-xs">
+                    Såld
+                  </div>
+                ) : product.conditionGrade ? (
+                  <div className="absolute top-2 left-2">
+                    <ConditionBadge grade={product.conditionGrade} />
+                  </div>
+                ) : null}
               </div>
 
-              <div className="pt-3 border-t border-stone flex items-baseline justify-between text-xs font-mono">
-                <span className="text-sm font-bold text-ink">
-                  {formatSEK(product.basePrice)}
+              {/* Product Details (Title & Bold Price) */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-mono uppercase text-wood/80 block tracking-wider">
+                  {product.designer}
                 </span>
-                <span className="text-wood font-semibold group-hover:underline">
-                  {product.stockStatus === "sald" ? "Se detaljer →" : "Köp möbel →"}
-                </span>
+                <h3 className="font-sans text-xs sm:text-sm font-normal text-ink group-hover:text-wood transition-colors leading-snug line-clamp-2 uppercase">
+                  {product.name}
+                </h3>
+                <div className="pt-1">
+                  <span className="font-sans text-sm sm:text-base font-bold text-ink block">
+                    {formatSEK(product.basePrice)}
+                  </span>
+                </div>
               </div>
             </Link>
           ))}

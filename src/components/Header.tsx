@@ -5,11 +5,11 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useCart } from "@/lib/store";
-import { ShoppingBag, Menu, X, Compass, Sparkles } from "lucide-react";
+import { ShoppingCart, Menu, X, Compass, Sparkles } from "lucide-react";
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
-  const { itemCount, setIsDrawerOpen } = useCart();
+  const { itemCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -115,20 +115,20 @@ export const Header: React.FC = () => {
             Begär Offert
           </Link>
 
-          {/* Cart Icon & Count */}
-          <button
-            onClick={() => setIsDrawerOpen(true)}
-            className="relative p-2 text-[#1C1917] hover:text-[#5B4433] transition-colors flex items-center gap-2 border border-[#DCD5C8] bg-white/60 px-3 py-1.5"
+          {/* Cart Icon & Count -> Direct link to /varukorg */}
+          <Link
+            href="/varukorg"
+            className="relative p-2 text-[#1C1917] hover:text-[#5B4433] transition-colors flex items-center gap-2 border border-[#DCD5C8] bg-white/60 px-3 py-1.5 rounded-xs"
             aria-label="Varukorg"
           >
-            <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.75]" />
+            <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 stroke-[1.75]" />
             <span className="hidden md:inline text-xs font-mono">Varukorg</span>
             {itemCount > 0 && (
-              <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1 bg-[#1C1917] text-[#F6F3ED] font-mono text-[11px] font-bold">
+              <span className="inline-flex items-center justify-center min-w-[20px] h-5 px-1 bg-[#1C1917] text-[#F6F3ED] font-mono text-[11px] font-bold rounded-full">
                 {itemCount}
               </span>
             )}
-          </button>
+          </Link>
         </div>
       </div>
 

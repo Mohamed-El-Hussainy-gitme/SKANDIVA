@@ -217,16 +217,16 @@ export default async function HomePage() {
               </Link>
             </div>
 
-            {/* Right Column: 4-Up Grid */}
+            {/* Right Column: 4-Up Grid (Clean & Borderless Fanins Style) */}
             <div className="lg:col-span-9">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
                 {featuredProducts.map((product) => (
                   <Link
                     key={product.id}
                     href={`/butik/${product.slug}`}
-                    className="group flex flex-col bg-white border border-[#DCD5C8] hover:border-[#5B4433] transition-all p-3 space-y-3 shadow-sm hover:shadow-md"
+                    className="group flex flex-col space-y-2.5"
                   >
-                    <div className="relative aspect-[3/4] w-full bg-[#F6F3ED] overflow-hidden">
+                    <div className="relative aspect-square w-full bg-white/70 overflow-hidden flex items-center justify-center p-2">
                       <Image
                         src={product.primaryImage}
                         alt={product.name}
@@ -244,21 +244,16 @@ export default async function HomePage() {
                       ) : null}
                     </div>
 
-                    <div className="space-y-1.5 flex-1 flex flex-col justify-between">
-                      <div>
-                        <span className="text-[10px] font-mono uppercase text-[#5B4433] block">
-                          {product.designer}
-                        </span>
-                        <h4 className="text-xs sm:text-sm font-serif font-medium text-[#1C1917] group-hover:text-[#5B4433] transition-colors line-clamp-2">
-                          {product.name}
-                        </h4>
-                      </div>
-                      <div className="pt-2 border-t border-[#DCD5C8]/60 flex items-baseline justify-between">
-                        <span className="font-mono text-sm font-bold text-[#1C1917]">
+                    <div className="space-y-1">
+                      <span className="text-[10px] font-mono uppercase text-[#5B4433] block">
+                        {product.designer}
+                      </span>
+                      <h4 className="text-xs sm:text-sm font-sans font-normal text-[#1C1917] group-hover:text-[#5B4433] transition-colors line-clamp-2 uppercase">
+                        {product.name}
+                      </h4>
+                      <div className="pt-0.5">
+                        <span className="font-sans text-sm sm:text-base font-bold text-[#1C1917]">
                           {formatSEK(product.basePrice)}
-                        </span>
-                        <span className="text-[10px] font-mono uppercase text-[#5B4433] group-hover:underline">
-                          {product.stockStatus === "sald" ? "Visningsarkiv" : "Köp →"}
                         </span>
                       </div>
                     </div>
