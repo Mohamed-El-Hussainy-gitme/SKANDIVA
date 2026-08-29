@@ -24,6 +24,17 @@ export async function PATCH(request: Request) {
     const updated = await serverDb.updateSettings(updates);
     logger.audit("SITE_SETTINGS_UPDATED_IN_DATABASE", { updatedFields: Object.keys(updates), admin: session.email });
 
+    // Invalidate Next.js cache so changes reflect immediately across all pages and footer
+    try {
+      const { revalidatePath } = await import("next/cache");
+      revalidatePath("/", "layout");
+      revalidatePath("/kontakt");
+      revalidatePath("/om-oss");
+      revalidatePath("/butik");
+    } catch {
+      // ignore in test/build environments
+    }
+
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     logger.error("PATCH_SETTINGS_FAILED", error);

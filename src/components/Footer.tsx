@@ -1,9 +1,26 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck, Truck, RefreshCw, Award, MapPin, Mail, Clock, Phone } from "lucide-react";
+import { ShieldCheck, Truck, RefreshCw, Award, MapPin, Mail, Clock, Phone, MessageSquare } from "lucide-react";
+import { serverDb } from "@/lib/supabaseServer";
 
-export const Footer: React.FC = () => {
+export async function Footer() {
+  let settings;
+  try {
+    settings = await serverDb.getSettings();
+  } catch (e) {
+    console.error("Failed to load settings in Footer", e);
+  }
+
+  const companyName = settings?.companyName || "Skandiva Tapetserarverkstad AB";
+  const orgNumber = settings?.orgNumber || "559281-3942";
+  const address = settings?.address || "Åsögatan 142, 116 24 Södermalm, Stockholm";
+  const openingHours = settings?.openingHours || "Mån–Fre: 08:30 – 17:00 • Lör: Enligt tidsbokning";
+  const phone = settings?.phone || "08-640 22 90";
+  const email = settings?.email || "kontakt@skandiva.se";
+  const whatsappNumber = settings?.whatsappNumber || "+4686402290";
+  const cleanMomsNr = orgNumber.replace(/[^0-9]/g, "");
+
   return (
     <footer className="bg-[#1C1917] text-[#F6F3ED] pt-16 pb-12 border-t-4 border-[#5B4433]">
       {/* 4 Trust & Heritage Pillars */}
@@ -76,7 +93,7 @@ export const Footer: React.FC = () => {
               <div>
                 <span className="font-serif text-2xl font-bold tracking-tight block text-[#F6F3ED]">SKANDIVA</span>
                 <span className="font-mono text-[10px] tracking-[0.2em] text-[#DCD5C8] uppercase">
-                  Tapetserarverkstad • Stockholm
+                  {companyName}
                 </span>
               </div>
             </div>
@@ -86,19 +103,36 @@ export const Footer: React.FC = () => {
             <div className="pt-2 text-xs font-mono text-[#F6F3ED]/75 space-y-2">
               <div className="flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-[#DCD5C8] shrink-0" />
-                <span>Verkstad: Åsögatan 142, 116 24 Södermalm, Stockholm</span>
+                <span>Verkstad: {address}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[#DCD5C8] shrink-0" />
-                <span>Mån–Fre: 08:30 – 17:00 • Lör: Enligt tidsbokning</span>
+                <span>{openingHours}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-[#DCD5C8] shrink-0" />
-                <span>08-640 22 90</span>
+                <a href={`tel:${phone.replace(/\s+/g, "")}`} className="hover:text-white transition-colors">
+                  {phone}
+                </a>
               </div>
+              {whatsappNumber && (
+                <div className="flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-[#DCD5C8] shrink-0" />
+                  <a
+                    href={`https://wa.me/${whatsappNumber.replace(/[^0-9]/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-white transition-colors"
+                  >
+                    WhatsApp: {whatsappNumber}
+                  </a>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Mail className="w-4 h-4 text-[#DCD5C8] shrink-0" />
-                <span>kontakt@skandiva.se</span>
+                <a href={`mailto:${email}`} className="hover:text-white transition-colors">
+                  {email}
+                </a>
               </div>
             </div>
           </div>
@@ -146,8 +180,10 @@ export const Footer: React.FC = () => {
             </ul>
             <div className="pt-3 border-t border-white/10">
               <span className="text-[11px] font-mono text-[#F6F3ED]/60 block">Organisationsnummer:</span>
-              <span className="text-xs font-mono text-[#F6F3ED] font-semibold">559281-3942</span>
-              <span className="text-[10px] font-mono text-[#F6F3ED]/50 block mt-0.5">Godkänd för F-skatt • Momsreg.nr: SE559281394201</span>
+              <span className="text-xs font-mono text-[#F6F3ED] font-semibold">{orgNumber}</span>
+              <span className="text-[10px] font-mono text-[#F6F3ED]/50 block mt-0.5">
+                Godkänd för F-skatt • Momsreg.nr: SE{cleanMomsNr}01
+              </span>
             </div>
           </div>
         </div>
@@ -164,9 +200,9 @@ export const Footer: React.FC = () => {
         </div>
 
         <div>
-          © {new Date().getFullYear()} Skandiva Tapetserarverkstad AB. Alla rättigheter förbehållna.
+          © {new Date().getFullYear()} {companyName}. Alla rättigheter förbehållna.
         </div>
       </div>
     </footer>
   );
-};
+}
