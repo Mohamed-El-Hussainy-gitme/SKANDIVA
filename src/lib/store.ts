@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { OrderItem, DeliveryZone } from "@/types";
@@ -126,9 +126,10 @@ export function useCart() {
     return unsubscribe;
   }, []);
 
+  const currentZone = selectedZone || INITIAL_DELIVERY_ZONES[0];
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = items.reduce((acc, item) => acc + item.totalPrice, 0);
-  const deliveryFee = selectedZone.surcharge;
+  const deliveryFee = currentZone?.surcharge || 0;
   const taxAmount = (subtotal + deliveryFee) * 0.2; // 25% moms of net (20% of gross)
   const totalAmount = subtotal + deliveryFee;
 
@@ -139,7 +140,7 @@ export function useCart() {
     deliveryFee,
     taxAmount,
     totalAmount,
-    selectedZone,
+    selectedZone: currentZone,
     isDrawerOpen,
     setIsDrawerOpen,
     addItem: cartStore.addItem,

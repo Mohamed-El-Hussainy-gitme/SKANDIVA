@@ -159,7 +159,7 @@ export default function VarukorgPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 {zones.map((zone) => {
-                  const isSelected = selectedZone.id === zone.id;
+                  const isSelected = selectedZone?.id === zone.id;
                   return (
                     <div
                       key={zone.id}
@@ -197,8 +197,8 @@ export default function VarukorgPage() {
                 </div>
 
                 <div className="flex justify-between text-ink/80">
-                  <span>Leverans ({selectedZone.name})</span>
-                  <span>{selectedZone.surcharge === 0 ? "0 kr" : formatSEK(deliveryFee)}</span>
+                  <span>Leverans ({selectedZone?.name || "Stockholm"})</span>
+                  <span>{(selectedZone?.surcharge ?? 0) === 0 ? "0 kr" : formatSEK(deliveryFee)}</span>
                 </div>
 
                 <div className="flex justify-between text-ink/60 border-t border-stone/50 pt-2">

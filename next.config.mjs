@@ -12,6 +12,20 @@ const nextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: "/cart",
+        destination: "/varukorg",
+        permanent: true,
+      },
+      {
+        source: "/checkout",
+        destination: "/kassa",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

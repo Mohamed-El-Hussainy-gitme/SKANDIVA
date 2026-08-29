@@ -173,9 +173,9 @@ export const CartDrawer: React.FC = () => {
               <div className="flex items-center justify-between text-xs font-mono text-ink/70">
                 <span className="flex items-center gap-1.5">
                   <Truck className="w-3.5 h-3.5 text-wood" />
-                  {selectedZone.name}
+                  {selectedZone?.name || "Stockholm"}
                 </span>
-                <span>{selectedZone.surcharge === 0 ? "Ingår (0 kr)" : formatSEK(selectedZone.surcharge)}</span>
+                <span>{(selectedZone?.surcharge || 0) === 0 ? "Ingår (0 kr)" : formatSEK(selectedZone?.surcharge || 0)}</span>
               </div>
 
               {/* Subtotal & Total */}
