@@ -74,11 +74,6 @@ export default async function HomePage() {
               </Link>
             </div>
 
-            <div className="pt-2 flex flex-wrap gap-6 text-[11px] font-mono text-white/65">
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-stone-300" />10–14 dagars ledtid</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-stone-300" />5 års hantverksgaranti</span>
-              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-stone-300" />Åsögatan • Södermalm</span>
-            </div>
           </div>
         </div>
       </section>

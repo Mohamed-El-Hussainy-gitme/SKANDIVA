@@ -1,7 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ShieldCheck, Sparkles, RefreshCw, Award, MapPin, Mail, Clock, Phone, MessageSquare } from "lucide-react";
+import { MapPin, Mail, Clock, Phone, MessageSquare } from "lucide-react";
 import { serverDb } from "@/lib/db";
 
 export async function Footer() {
@@ -23,59 +23,6 @@ export async function Footer() {
 
   return (
     <footer className="bg-stone-950 text-stone-200 pt-16 pb-12 border-t-4 border-stone-800">
-      {/* 4 Trust & Heritage Pillars */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12 border-b border-stone-800">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-white/5 border border-white/10 shrink-0">
-              <Award className="w-6 h-6 text-stone-300" />
-            </div>
-            <div>
-              <h4 className="font-serif text-lg font-medium text-white">Mästarkompetens</h4>
-              <p className="text-xs text-stone-400 font-sans mt-1 leading-relaxed">
-                Auktoriserat tapetserarhantverk med traditionella och moderna metoder.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-white/5 border border-white/10 shrink-0">
-              <ShieldCheck className="w-6 h-6 text-stone-300" />
-            </div>
-            <div>
-              <h4 className="font-serif text-lg font-medium text-white">5 Års Garanti</h4>
-              <p className="text-xs text-stone-400 font-sans mt-1 leading-relaxed">
-                Full garanti på utfört hantverk, bärväv, spiralfjädring och sömnad.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-white/5 border border-white/10 shrink-0">
-              <Sparkles className="w-6 h-6 text-stone-300" />
-            </div>
-            <div>
-              <h4 className="font-serif text-lg font-medium text-white">Certifierade Material</h4>
-              <p className="text-xs text-stone-400 font-sans mt-1 leading-relaxed">
-                Skandilock-fårskinn och vegetabiliskt anilinläder från Elmo och Tärnsjö.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-4">
-            <div className="p-3 bg-white/5 border border-white/10 shrink-0">
-              <RefreshCw className="w-6 h-6 text-stone-300" />
-            </div>
-            <div>
-              <h4 className="font-serif text-lg font-medium text-white">Cirkulärt Återbruk</h4>
-              <p className="text-xs text-stone-400 font-sans mt-1 leading-relaxed">
-                Vi förlänger livslängden på svenska designikoner i generationer.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Main Footer Body with Logo, Contact & Links */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-10">

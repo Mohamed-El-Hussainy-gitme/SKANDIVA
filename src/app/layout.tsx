@@ -10,9 +10,14 @@ export const metadata: Metadata = {
   description:
     "Auktoriserad möbeltapetserarverkstad i Stockholm. Specialiserade på omklädsel av Lamino, Bruno Mathsson och DUX-möbler, samt försäljning av nyrenoverade designklassiker och dynsatser.",
   icons: {
-    icon: "/skandiva_classic_logo.png",
-    shortcut: "/skandiva_classic_logo.png",
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
     apple: "/skandiva_classic_logo.png",
+  },
+  openGraph: {
+    title: "Skandiva Tapetserarverkstad",
+    description: "Omklädsel och restaurering av svenska designklassiker i Stockholm.",
+    images: [{ url: "/Jetson-69-canvas-jpg-2-jpg.avif", width: 1200, height: 630, alt: "Skandiva tapetserarverkstad" }],
   },
   keywords: [
     "Lamino omklädsel",

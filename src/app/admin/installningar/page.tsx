@@ -209,7 +209,7 @@ export default function AdminSettingsPage() {
         {activeTab === "lamino" && (
           <div className="bg-white border border-stone-200 p-6 sm:p-8 space-y-8 shadow-sm">
             <h3 className="font-serif text-xl text-stone-900 font-medium border-b border-stone-200 pb-3">
-              Lamino Kampanjsektion & Specialsida
+              Lamino-sektion
             </h3>
 
             <div className="space-y-6">
@@ -262,55 +262,6 @@ export default function AdminSettingsPage() {
                 />
               </div>
 
-              <div className="border-t border-stone-200 pt-6 space-y-4">
-                <h4 className="font-serif text-lg text-stone-900">Lamino Specialsida</h4>
-
-                <div>
-                  <label className="block text-xs font-mono uppercase text-stone-500 mb-1">
-                    Titel för Lamino-sidan
-                  </label>
-                  <input
-                    type="text"
-                    value={settings.laminoPageTitle}
-                    onChange={(e) => setSettings({ ...settings, laminoPageTitle: e.target.value })}
-                    className="w-full bg-stone-50 border border-stone-300 p-3 text-sm font-serif text-stone-900 focus:outline-none focus:border-stone-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono uppercase text-stone-500 mb-1">
-                    Underrubrik / Intro för Lamino-sidan
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={settings.laminoPageSubtitle}
-                    onChange={(e) => setSettings({ ...settings, laminoPageSubtitle: e.target.value })}
-                    className="w-full bg-stone-50 border border-stone-300 p-3 text-sm font-sans text-stone-900 focus:outline-none focus:border-stone-600"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-mono uppercase text-stone-500 mb-2">
-                    Hero-bild för Lamino-sidan
-                  </label>
-                  <ImageUploadField
-                    value={settings.laminoPageImage}
-                    onChange={(url) => setSettings({ ...settings, laminoPageImage: url })}
-                    label="Ladda upp bild för Lamino-specialsidan"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-xs font-mono uppercase text-stone-500 mb-1">Rubrik för arbetsprocess</label>
-                    <input type="text" value={settings.laminoProcessTitle} onChange={(e) => setSettings({ ...settings, laminoProcessTitle: e.target.value })} className="w-full bg-stone-50 border border-stone-300 p-3 text-sm font-serif text-stone-900 focus:outline-none focus:border-stone-600" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-mono uppercase text-stone-500 mb-1">Introduktion till arbetsprocessen</label>
-                    <textarea rows={2} value={settings.laminoProcessDescription} onChange={(e) => setSettings({ ...settings, laminoProcessDescription: e.target.value })} className="w-full bg-stone-50 border border-stone-300 p-3 text-sm text-stone-900 focus:outline-none focus:border-stone-600" />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         )}
