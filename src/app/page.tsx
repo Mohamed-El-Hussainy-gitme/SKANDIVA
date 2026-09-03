@@ -142,6 +142,11 @@ export default async function HomePage() {
               <p className="text-white/80 font-sans text-base leading-relaxed">
                 {settings.laminoDescription || "Har du en Lamino-fåtölj med slitet fårskinn eller trasig bärväv? Vi är specialiserade på Yngve Ekströms mästerverk och klär om med premiumfårskinn från Skandilock i klassiska kulörer som Scandinavian Grey, Offwhite, Charcoal och Sahara."}
               </p>
+              {settings.laminoPrice > 0 && (
+                <p className="font-mono text-sm uppercase tracking-widest text-white/90">
+                  Från {formatSEK(settings.laminoPrice)}
+                </p>
+              )}
               <ul className="space-y-2.5 pt-2">
                 {[
                   "Certifierat Skandilock-fårskinn (högsta slitstyrka)",

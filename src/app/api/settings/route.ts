@@ -31,6 +31,7 @@ export async function PATCH(request: Request) {
       revalidatePath("/kontakt");
       revalidatePath("/om-oss");
       revalidatePath("/butik");
+      revalidatePath("/lamino-omkladsel");
     } catch {
       // ignore in test/build environments
     }
