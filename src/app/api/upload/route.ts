@@ -1,37 +1,47 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import path from "path";
-import { supabaseAdmin } from "@/lib/supabaseServer";
-import { authenticateAdminRequest } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/db";
 import { logger } from "@/lib/logger";
 
-const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif", "image/svg+xml"];
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/avif",
+  "image/gif",
+  "image/svg+xml",
+];
+const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB
 
 export async function POST(request: Request) {
   try {
-    const session = authenticateAdminRequest(request);
-    if (!session) {
-      return NextResponse.json({ success: false, error: "Obehörig. Mästarlösenord krävs för uppladdning." }, { status: 401 });
-    }
-
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json({ success: false, error: "Ingen bildfil bifogades." }, { status: 400 });
+      return NextResponse.json(
+        { success: false, error: "Ingen bildfil bifogades." },
+        { status: 400 }
+      );
     }
 
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { success: false, error: "Otillåtet filformat. Endast JPG, PNG, WEBP och SVG stöds." },
+        {
+          success: false,
+          error: "Otillåtet filformat. Endast JPG, PNG, WEBP, AVIF och GIF stöds.",
+        },
         { status: 400 }
       );
     }
 
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
-        { success: false, error: "Filen är för stor. Max tillåten storlek är 10 MB." },
+        {
+          success: false,
+          error: "Filen är för stor. Max tillåten storlek är 15 MB.",
+        },
         { status: 400 }
       );
     }
@@ -41,11 +51,14 @@ export async function POST(request: Request) {
 
     // Generate safe unique filename
     const ext = path.extname(file.name) || `.${file.type.split("/")[1] || "jpg"}`;
-    const safeBaseName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 30);
+    const safeBaseName = path
+      .basename(file.name, ext)
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .slice(0, 30);
     const uniqueSuffix = crypto.randomBytes(6).toString("hex");
     const filename = `${safeBaseName}-${uniqueSuffix}${ext}`;
 
-    // Upload to Supabase Storage (only path — no local disk fallback on serverless)
+    // Upload to Supabase Storage bucket 'media'
     const { data, error } = await supabaseAdmin.storage
       .from("media")
       .upload(`uploads/${filename}`, buffer, {
@@ -54,29 +67,35 @@ export async function POST(request: Request) {
       });
 
     if (error || !data) {
-      logger.error("SUPABASE_STORAGE_UPLOAD_FAILED", { error: error?.message, filename });
+      logger.error("SUPABASE_STORAGE_UPLOAD_FAILED", {
+        error: error?.message,
+        filename,
+      });
       return NextResponse.json(
-        { success: false, error: "Bilden kunde inte laddas upp till medielagringen. Kontrollera att Supabase Storage är konfigurerat korrekt." },
+        {
+          success: false,
+          error:
+            "Bilden kunde inte laddas upp till medielagringen. Kontrollera lagringsinställningarna.",
+        },
         { status: 500 }
       );
     }
 
-    const { data: urlData } = supabaseAdmin.storage.from("media").getPublicUrl(`uploads/${filename}`);
+    const { data: urlData } = supabaseAdmin.storage
+      .from("media")
+      .getPublicUrl(`uploads/${filename}`);
 
     if (!urlData?.publicUrl) {
       logger.error("SUPABASE_STORAGE_PUBLIC_URL_MISSING", { filename });
       return NextResponse.json(
-        { success: false, error: "Bilden laddades upp men den publika URL:en kunde inte hämtas." },
+        {
+          success: false,
+          error:
+            "Bilden laddades upp men den publika adressen kunde inte hämtas.",
+        },
         { status: 500 }
       );
     }
-
-    logger.audit("IMAGE_UPLOADED_TO_SUPABASE_STORAGE", {
-      filename,
-      size: file.size,
-      url: urlData.publicUrl,
-      admin: session.email,
-    });
 
     return NextResponse.json({
       success: true,
@@ -86,6 +105,9 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     logger.error("IMAGE_UPLOAD_FAILED", error);
-    return NextResponse.json({ success: false, error: "Kunde inte ladda upp bilden till servern." }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Kunde inte ladda upp bilden till servern." },
+      { status: 500 }
+    );
   }
 }

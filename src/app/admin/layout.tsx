@@ -7,10 +7,9 @@ import { CrestSeal } from "@/components/ui/CrestSeal";
 import { 
   LayoutDashboard, 
   ShoppingBag, 
-  Wrench, 
+  Palette,
+  Image as ImageIcon,
   ClipboardList, 
-  Truck, 
-  Star, 
   Sliders, 
   ArrowLeft,
   LogOut
@@ -27,12 +26,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const links = [
     { href: "/admin", label: "Översikt & KPI", icon: LayoutDashboard },
-    { href: "/admin/ordrar", label: "Ordrar & Offerter (Pipeline)", icon: ClipboardList },
-    { href: "/admin/produkter", label: "Produkter & Varianter", icon: ShoppingBag },
-    { href: "/admin/tjanster", label: "Verkstadstjänster (Lamino)", icon: Wrench },
-    { href: "/admin/installningar", label: "Inställningar & CMS", icon: Sliders },
-    { href: "/admin/leveranszoner", label: "Leveranszoner", icon: Truck },
-    { href: "/admin/omdomen", label: "Omdömen & Feedback", icon: Star },
+    { href: "/admin/ordrar", label: "Ordrar", icon: ClipboardList },
+    { href: "/admin/offerter", label: "Offerter", icon: ClipboardList },
+    { href: "/admin/produkter", label: "Produktkatalog", icon: ShoppingBag },
+    { href: "/admin/material", label: "Material & färger", icon: Palette },
+    { href: "/admin/galleri", label: "Före & efter", icon: ImageIcon },
+    { href: "/admin/installningar", label: "Sidinnehåll & CMS", icon: Sliders },
   ];
 
   const handleLogout = async () => {
@@ -46,14 +45,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen bg-stone-light/30 flex flex-col md:flex-row">
-      <aside className="w-full md:w-64 bg-ink text-canvas border-r border-white/10 flex flex-col justify-between shrink-0 p-6 space-y-6">
+    <div className="min-h-screen bg-stone-50 flex flex-col md:flex-row">
+      <aside className="w-full md:w-64 bg-stone-900 text-stone-100 border-r border-stone-800 flex flex-col justify-between shrink-0 p-6 space-y-6">
         <div className="space-y-6">
-          <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+          <div className="flex items-center gap-3 border-b border-stone-800 pb-4">
             <CrestSeal size="sm" variant="light" subtitle="" />
             <div>
-              <span className="font-serif text-lg font-bold tracking-tight block">SKANDIVA</span>
-              <span className="font-mono text-[9px] text-stone-dark uppercase tracking-wider block -mt-1">
+              <span className="font-serif text-lg font-bold tracking-tight block text-white">SKANDIVA</span>
+              <span className="font-mono text-[9px] text-stone-400 uppercase tracking-wider block -mt-1">
                 Verkstadsadministration
               </span>
             </div>
@@ -69,8 +68,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   href={link.href}
                   className={`flex items-center gap-3 px-3 py-2.5 text-xs font-mono tracking-wider transition-colors ${
                     isActive
-                      ? "bg-wood text-canvas font-semibold"
-                      : "text-canvas/70 hover:bg-white/5 hover:text-canvas"
+                      ? "bg-stone-800 text-white font-semibold border-l-2 border-white"
+                      : "text-stone-400 hover:bg-stone-800/50 hover:text-white"
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -81,10 +80,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </nav>
         </div>
 
-        <div className="pt-6 border-t border-white/10 space-y-3">
+        <div className="pt-6 border-t border-stone-800 space-y-3">
           <Link
             href="/"
-            className="flex items-center gap-2 text-xs font-mono text-canvas/60 hover:text-canvas transition-colors"
+            className="flex items-center gap-2 text-xs font-mono text-stone-400 hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Tillbaka till Butiken</span>
@@ -97,7 +96,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <LogOut className="w-4 h-4" />
             <span>Logga ut</span>
           </button>
-          <div className="text-[10px] font-mono text-canvas/40">
+          <div className="text-[10px] font-mono text-stone-500">
             Skandiva Admin v2.0 • Supabase Synkad
           </div>
         </div>

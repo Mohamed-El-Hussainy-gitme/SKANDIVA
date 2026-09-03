@@ -1,20 +1,16 @@
+// ============================================================
+// Skandiva Tapetserarverkstad — Central Type Definitions
+// Single source of truth for all DB entities
+// ============================================================
+
+// --- Products (Renoverade Möbler i Butiken) ---
+
 export type FurnitureCategory = "Fatolj" | "Soffa" | "Stol" | "Mattor" | "Tillbehor";
 
 export type ConditionGrade = "Nyskick" | "Utmärkt skick" | "Utmarkt skick" | "Gott skick" | "Vacker patina";
 
 export type StockStatus = "i_lager" | "bestallningsvara" | "sald";
-
-export interface ProductVariant {
-  id: string;
-  name: string;
-  fabricName: string;
-  fabricColorHex: string;
-  materialDescription: string;
-  priceDelta: number; // additional price on top of basePrice
-  sku: string;
-  inStock: boolean;
-  image?: string;
-}
+export type ProductCollection = "none" | "lamino" | "dux";
 
 export interface Product {
   id: string;
@@ -23,6 +19,7 @@ export interface Product {
   designer: string;
   model: string;
   category: FurnitureCategory;
+  collection: ProductCollection;
   categoryNameSwedish: string;
   basePrice: number;
   description: string;
@@ -33,86 +30,62 @@ export interface Product {
   stockStatus: StockStatus;
   primaryImage: string;
   galleryImages: string[];
+  materialIds: string[];
   beforeImage?: string;
   afterImage?: string;
   featured?: boolean;
-  variants: ProductVariant[];
   createdAt: string;
 }
 
-export interface ServiceAddon {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  selectedByDefault?: boolean;
-}
+// --- Materials (Läder, Fårskinn, Tyger för Omklädsel) ---
 
-export interface ServiceOptionMaterial {
+export interface Material {
   id: string;
   name: string;
-  category: "farskinn" | "lader" | "ulltyg" | "sammet" | "linne";
-  colorName: string;
-  colorHex: string;
-  price: number;
+  materialType: string;   // 'leather' | 'fabric' | 'sheepskin'
+  colorHex?: string;
+  imageUrl: string;       // Required swatch image for lightbox
+  price: number;          // Additional cost for upholstery option
   supplier?: string;
   description?: string;
+  sortOrder: number;
+  active: boolean;
+  createdAt: string;
 }
 
-export interface WorkshopService {
+// --- Gallery (Före & Efter Renoveringsprojekt) ---
+
+export interface GalleryItem {
   id: string;
-  slug: string;
-  name: string;
-  shortDescription: string;
-  fullDescription: string;
-  furnitureType: string;
-  applicableModels: string[];
-  isFixedPrice: boolean;
-  priceRangeText: string;
-  basePrice: number;
-  turnaroundDays: number;
-  turnaroundText: string;
-  primaryImage: string;
-  beforeAfterPair?: {
-    before: string;
-    after: string;
-  };
-  materials: ServiceOptionMaterial[];
-  addons: ServiceAddon[];
-  featured?: boolean;
+  title: string;
+  description?: string;
+  beforeImage: string;
+  afterImage: string;
+  sortOrder: number;
+  createdAt: string;
 }
 
-export type OrderType = "product" | "service" | "bespoke_quote";
+// --- Orders (Beställningar från Butiken) ---
 
-export type OrderStatus = 
+export type OrderType = "product" | "bespoke_quote";
+
+export type OrderStatus =
   | "mottagen"            // Received
   | "material_forbereds"  // Material & Fabric preparation
   | "i_verkstaden"        // In workshop / Upholstery in progress
   | "kvalitetskontroll"   // Quality inspection
-  | "redo_for_leverans"   // Dispatched / Ready for courier
+  | "redo_for_leverans"   // Ready for pickup/delivery
   | "levererad"           // Delivered / Complete
   | "avbruten";           // Cancelled
 
 export type QuoteStatus = "ny" | "offert_skickad" | "bekraftad" | "i_arbete" | "slufford" | "avvisad";
 
-export interface DeliveryZone {
-  id: string;
-  name: string;
-  description: string;
-  corridorDescription: string;
-  surcharge: number; // SEK
-  estimatedDeliveryDays: string;
-  active: boolean;
-}
-
 export interface OrderItem {
   id: string;
-  type: "product" | "service";
+  type: "product";
   referenceId: string;
   title: string;
   designerOrModel?: string;
-  selectedVariantName?: string;
-  selectedVariantPrice?: number;
   selectedMaterial?: string;
   selectedAddons?: string[];
   quantity: number;
@@ -121,20 +94,9 @@ export interface OrderItem {
   image: string;
 }
 
-export interface TrackingEvent {
-  id: string;
-  status: OrderStatus;
-  title: string;
-  description: string;
-  timestamp: string;
-  completed: boolean;
-  active: boolean;
-  technicianNote?: string;
-}
-
 export interface Order {
   id: string;
-  orderNumber: string; // e.g. "SKD-2026-8942"
+  orderNumber: string;
   orderType: OrderType;
   customerName: string;
   customerEmail: string;
@@ -142,17 +104,13 @@ export interface Order {
   customerAddress: string;
   customerPostalCode: string;
   customerCity: string;
-  deliveryZoneId: string;
-  deliveryZoneName: string;
-  deliveryFee: number;
   subtotal: number;
-  taxAmount: number; // 25% Swedish moms
+  taxAmount: number;
   totalAmount: number;
   paymentMethod: "klarna" | "swish" | "kort";
   paymentStatus: "betald" | "vantar_pa_betalning" | "delbetalning";
   status: OrderStatus;
   items: OrderItem[];
-  trackingEvents: TrackingEvent[];
   estimatedCompletionDate?: string;
   workshopNotes?: string;
   assignedUpholsterer?: string;
@@ -160,12 +118,11 @@ export interface Order {
   updatedAt: string;
 }
 
+// --- Quotes (Begär Offert för Omklädsel / Tjänster) ---
+
 export interface QuoteRequest {
   id: string;
-  quoteNumber: string; // e.g. "OFF-2026-1045"
-  isB2B: boolean;
-  companyName?: string;
-  orgNumber?: string;
+  quoteNumber: string;
   contactName: string;
   email: string;
   phone: string;
@@ -183,16 +140,7 @@ export interface QuoteRequest {
   createdAt: string;
 }
 
-export interface Review {
-  id: string;
-  author: string;
-  location: string;
-  furnitureModel: string;
-  rating: number; // 1-5
-  text: string;
-  date: string;
-  verifiedPurchase: boolean;
-}
+// --- Site Settings (CMS) ---
 
 export interface SiteSettings {
   id: string;
@@ -203,16 +151,33 @@ export interface SiteSettings {
   address: string;
   openingHours: string;
   whatsappNumber: string;
+  taxEnabled: boolean;
+  taxRate: number;
+  // Hero
   heroHeadline: string;
   heroSubtitle: string;
   heroBadge: string;
   heroImage: string;
+  // Lamino section
   laminoTitle: string;
   laminoDescription: string;
   laminoPrice: number;
   laminoImage: string;
+  // Dedicated Omklädsel pages
+  laminoPageTitle: string;
+  laminoPageSubtitle: string;
+  laminoPageImage: string;
+  laminoProcessTitle: string;
+  laminoProcessDescription: string;
+  duxPageTitle: string;
+  duxPageSubtitle: string;
+  duxPageImage: string;
+  duxServicesTitle: string;
+  duxServicesDescription: string;
+  // Gallery section headings
   beforeAfterTitle: string;
   beforeAfterDescription: string;
+  // Category banners
   fatoljBannerTitle: string;
   fatoljBannerDescription: string;
   fatoljBannerImage: string;
@@ -221,7 +186,9 @@ export interface SiteSettings {
   soffaBannerDescription: string;
   soffaBannerImage: string;
   soffaBannerCta: string;
-  b2bTitle: string;
-  b2bDescription: string;
+  // About page CMS
+  aboutTitle: string;
+  aboutDescription: string;
+  aboutImage: string;
   updatedAt: string;
 }

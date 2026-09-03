@@ -5,19 +5,7 @@
 -- 1. Enable UUID extension
 create extension if not exists "uuid-ossp";
 
--- 2. Delivery Zones Table
-create table if not exists delivery_zones (
-  id text primary key,
-  name text not null,
-  description text,
-  corridor_description text,
-  surcharge numeric not null default 0,
-  estimated_delivery_days text,
-  active boolean default true,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
-);
-
--- 3. Products Table
+-- 2. Products Table
 create table if not exists products (
   id text primary key,
   slug text unique not null,
@@ -26,6 +14,7 @@ create table if not exists products (
   model text not null,
   category text not null,
   category_name_swedish text not null,
+  collection text not null default 'none',
   base_price numeric not null,
   description text not null,
   historical_context text,
@@ -35,36 +24,29 @@ create table if not exists products (
   stock_status text not null default 'i_lager',
   primary_image text not null,
   gallery_images jsonb default '[]'::jsonb,
+  material_ids jsonb not null default '[]'::jsonb,
   before_image text,
   after_image text,
   featured boolean default false,
-  variants jsonb default '[]'::jsonb,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 4. Workshop Services Table
-create table if not exists workshop_services (
+-- 3. Reusable Material Library
+create table if not exists materials (
   id text primary key,
-  slug text unique not null,
   name text not null,
-  short_description text not null,
-  full_description text not null,
-  furniture_type text not null,
-  applicable_models jsonb default '[]'::jsonb,
-  is_fixed_price boolean default false,
-  price_range_text text not null,
-  base_price numeric not null default 0,
-  turnaround_days integer default 14,
-  turnaround_text text,
-  primary_image text not null,
-  before_after_pair jsonb,
-  materials jsonb default '[]'::jsonb,
-  addons jsonb default '[]'::jsonb,
-  featured boolean default false,
+  material_type text not null,
+  color_hex text,
+  image_url text not null,
+  price numeric not null default 0,
+  supplier text,
+  description text,
+  sort_order integer not null default 0,
+  active boolean default true,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 5. Orders Table
+-- 4. Orders Table
 create table if not exists orders (
   id text primary key,
   order_number text unique not null,
@@ -75,9 +57,6 @@ create table if not exists orders (
   customer_address text not null,
   customer_postal_code text not null,
   customer_city text not null,
-  delivery_zone_id text,
-  delivery_zone_name text,
-  delivery_fee numeric default 0,
   subtotal numeric not null,
   tax_amount numeric not null,
   total_amount numeric not null,
@@ -85,7 +64,6 @@ create table if not exists orders (
   payment_status text not null default 'betald',
   status text not null default 'mottagen',
   items jsonb default '[]'::jsonb,
-  tracking_events jsonb default '[]'::jsonb,
   estimated_completion_date text,
   workshop_notes text,
   assigned_upholsterer text,
@@ -93,13 +71,10 @@ create table if not exists orders (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 6. Quote Requests Table (Bespoke & B2B)
+-- 5. Quote Requests Table
 create table if not exists quote_requests (
   id text primary key,
   quote_number text unique not null,
-  is_b2b boolean default false,
-  company_name text,
-  org_number text,
   contact_name text not null,
   email text not null,
   phone text not null,
@@ -117,32 +92,37 @@ create table if not exists quote_requests (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
--- 7. Reviews Table
-create table if not exists reviews (
-  id text primary key,
-  author text not null,
-  location text,
-  furniture_model text,
-  rating integer not null check (rating between 1 and 5),
-  text text not null,
-  date text not null,
-  verified_purchase boolean default true,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+-- 6. Site Settings CMS
+create table if not exists site_settings (
+  id text primary key default 'main',
+  company_name text not null default 'Skandiva Tapetserarverkstad AB',
+  org_number text not null default '559281-3942', phone text not null default '08-640 22 90',
+  email text not null default 'kontakt@skandiva.se', address text not null default 'Åsögatan 142, 116 24 Södermalm, Stockholm',
+  opening_hours text not null default 'Mån-Fre: 08:30 - 17:00', whatsapp_number text not null default '+4686402290',
+  hero_headline text not null default 'Ge nytt liv åt svenska designklassiker.', hero_subtitle text not null default '', hero_badge text not null default '', hero_image text not null default '',
+  lamino_title text not null default 'Lamino', lamino_description text not null default '', lamino_price numeric not null default 4900, lamino_image text not null default '',
+  before_after_title text not null default 'Före & Efter', before_after_description text not null default '',
+  fatolj_banner_title text not null default 'Omklädsel fåtölj', fatolj_banner_description text not null default '', fatolj_banner_image text not null default '', fatolj_banner_cta text not null default 'Begär offert',
+  soffa_banner_title text not null default 'Omklädsel soffa', soffa_banner_description text not null default '', soffa_banner_image text not null default '', soffa_banner_cta text not null default 'Begär offert',
+  b2b_title text not null default '', b2b_description text not null default '',
+  about_title text not null default 'Om Skandiva', about_description text not null default '', about_image text not null default '',
+  lamino_page_title text default 'Lamino Omklädsel i Fårskinn', lamino_page_subtitle text default '', lamino_page_image text default '', lamino_process_title text default 'Så renoverar vi din Lamino', lamino_process_description text default '',
+  dux_page_title text default 'DUX & Bruno Mathsson', dux_page_subtitle text default '', dux_page_image text default '', dux_services_title text default 'Specialanpassad renovering', dux_services_description text default '',
+  tax_enabled boolean not null default true, tax_rate numeric not null default 0.25,
+  updated_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
+insert into site_settings (id) values ('main') on conflict (id) do nothing;
 
--- 8. Row Level Security (RLS)
-alter table delivery_zones enable row level security;
+-- 7. Row Level Security (RLS)
 alter table products enable row level security;
-alter table workshop_services enable row level security;
+alter table materials enable row level security;
 alter table orders enable row level security;
 alter table quote_requests enable row level security;
-alter table reviews enable row level security;
 
--- Allow public read access to catalog, services, delivery zones, reviews
+-- Allow public read access to catalog and active materials
 create policy "Allow public read for products" on products for select using (true);
-create policy "Allow public read for services" on workshop_services for select using (true);
-create policy "Allow public read for delivery_zones" on delivery_zones for select using (true);
-create policy "Allow public read for reviews" on reviews for select using (true);
+create policy "Allow public read for active materials" on materials for select using (active = true);
+create policy "Allow full access for service_role materials" on materials using (true) with check (true);
 
 -- Allow public read for orders by order_number for order tracking
 create policy "Allow public tracking of orders" on orders for select using (true);

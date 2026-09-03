@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { serverDb } from "@/lib/supabaseServer";
+import { serverDb } from "@/lib/db";
 import { progressOrderStage } from "@/lib/engine";
 import { OrderStatus } from "@/types";
 import { authenticateAdminRequest } from "@/lib/auth";
@@ -51,7 +51,7 @@ export async function PATCH(
       );
     }
 
-    if (body.trackingEvents) updatedOrder.trackingEvents = body.trackingEvents;
+
     if (body.workshopNotes !== undefined) updatedOrder.workshopNotes = body.workshopNotes;
     if (body.paymentStatus !== undefined) updatedOrder.paymentStatus = body.paymentStatus;
     if (body.estimatedCompletionDate !== undefined) updatedOrder.estimatedCompletionDate = body.estimatedCompletionDate;

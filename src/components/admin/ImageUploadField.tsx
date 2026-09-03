@@ -138,7 +138,7 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
               type="file"
               ref={fileInputRef}
               onChange={handleFileChange}
-              accept="image/png, image/jpeg, image/webp, image/svg+xml"
+              accept="image/png, image/jpeg, image/webp, image/avif, image/svg+xml"
               className="hidden"
               id={`file-upload-${label}`}
             />
@@ -155,7 +155,7 @@ export const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
                 <>
                   <UploadCloud className="w-7 h-7 text-wood" />
                   <span className="text-xs font-mono font-semibold text-ink">
-                    Klicka här för att välja fil (JPG, PNG, WEBP)
+                    Klicka här för att välja fil (JPG, PNG, WEBP, AVIF)
                   </span>
                   <span className="text-[11px] font-sans text-ink/60">
                     Max filstorlek: 8 MB

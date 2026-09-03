@@ -2,16 +2,15 @@
 
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { db } from "@/lib/supabase";
 import { Order, QuoteRequest } from "@/types";
-import { formatSEK } from "@/lib/store";
+import { formatSEK } from "@/lib/utils";
 import { OrderStatusBadge, QuoteStatusBadge } from "@/components/ui/Badge";
 import { 
   ShoppingBag, 
   ClipboardList, 
   Hammer, 
   TrendingUp, 
-  Building2,
+  
   RefreshCw,
   Loader2
 } from "lucide-react";
@@ -26,8 +25,8 @@ export default function AdminOverviewPage() {
   const loadData = async () => {
     try {
       const [allOrders, allQuotes] = await Promise.all([
-        db.getOrders(),
-        db.getQuotes(),
+        fetch("/api/orders").then(r => r.json()).then(d => d.success ? d.data : []),
+        fetch("/api/quotes").then(r => r.json()).then(d => d.success ? d.data : []),
       ]);
       setOrders(allOrders);
       setQuotes(allQuotes);
@@ -216,8 +215,7 @@ export default function AdminOverviewPage() {
                     <QuoteStatusBadge status={quote.status} />
                   </div>
                   <div className="text-[11px] text-ink/80 flex items-center gap-1.5">
-                    {quote.isB2B && <Building2 className="w-3.5 h-3.5 text-wood shrink-0" />}
-                    <span>{quote.isB2B ? quote.companyName : quote.contactName} • {quote.furnitureType}</span>
+                    <span>{quote.contactName} • {quote.furnitureType}</span>
                   </div>
                 </div>
               ))

@@ -1,47 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCart, formatSEK } from "@/lib/store";
-import { db } from "@/lib/supabase";
-import { DeliveryZone } from "@/types";
-import { Trash2, Plus, Minus, ArrowRight, Truck, ShieldCheck, MapPin } from "lucide-react";
+import { useCart } from "@/lib/store";
+import { formatSEK } from "@/lib/utils";
+import { Trash2, Plus, Minus, ArrowRight, ShieldCheck } from "lucide-react";
 
 export default function VarukorgPage() {
   const {
     items,
     itemCount,
     subtotal,
-    deliveryFee,
     taxAmount,
     totalAmount,
-    selectedZone,
-    setSelectedZone,
+    taxEnabled,
+    taxRate,
     removeItem,
     updateQuantity,
   } = useCart();
-
-  const [zones, setZones] = useState<DeliveryZone[]>([]);
-
-  useEffect(() => {
-    async function loadZones() {
-      try {
-        const fetched = await db.getDeliveryZones();
-        if (fetched && fetched.length > 0) {
-          setZones(fetched);
-          const currentValid = fetched.find(z => z.id === selectedZone?.id);
-          if (!currentValid) {
-            setSelectedZone(fetched[0]);
-          }
-        }
-      } catch (e) {
-        console.error("Failed to load delivery zones dynamically", e);
-      }
-    }
-    loadZones();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
@@ -56,7 +33,7 @@ export default function VarukorgPage() {
         <div className="py-20 text-center border border-dashed border-stone p-8 max-w-lg mx-auto space-y-4">
           <h3 className="font-serif text-2xl text-ink">Din varukorg är tom</h3>
           <p className="text-xs text-ink/70 font-sans">
-            Utforska vårt sortiment av klassiker och beställ Lamino Express direkt online.
+            Utforska vårt sortiment av renoverade klassiker och DUX-produkter.
           </p>
           <div className="pt-2 flex justify-center gap-3">
             <Link
@@ -66,10 +43,10 @@ export default function VarukorgPage() {
               Till Butiken
             </Link>
             <Link
-              href="/tjanster/lamino-express"
+              href="/lamino"
               className="px-6 py-3 border border-wood text-wood font-mono text-xs uppercase hover:bg-wood hover:text-canvas transition-colors"
             >
-              Lamino Express
+              Lamino Omklädsel
             </Link>
           </div>
         </div>
@@ -84,6 +61,7 @@ export default function VarukorgPage() {
                       src={item.image || "https://images.unsplash.com/photo-1580481077111-e4014902c38d?auto=format&fit=crop&w=300&q=80"}
                       alt={item.title}
                       fill
+                      sizes="96px"
                       className="object-cover"
                     />
                   </div>
@@ -104,22 +82,10 @@ export default function VarukorgPage() {
                       <p className="text-xs font-mono text-wood">{item.designerOrModel}</p>
                     )}
 
-                    {item.selectedVariantName && (
-                      <p className="text-xs text-ink/70">
-                        Utförande: <span className="font-medium text-ink">{item.selectedVariantName}</span>
-                      </p>
-                    )}
-
                     {item.selectedMaterial && (
                       <p className="text-xs text-ink/70">
                         Material: <span className="font-medium text-ink">{item.selectedMaterial}</span>
                       </p>
-                    )}
-
-                    {item.selectedAddons && item.selectedAddons.length > 0 && (
-                      <div className="text-[11px] text-wood font-mono mt-1">
-                        Tillval: {item.selectedAddons.join(", ")}
-                      </div>
                     )}
 
                     <div className="flex items-center justify-between pt-3">
@@ -147,41 +113,6 @@ export default function VarukorgPage() {
                 </div>
               ))}
             </div>
-
-            <div className="border border-stone bg-stone-light/40 p-6 space-y-4">
-              <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-wood font-semibold">
-                <MapPin className="w-4 h-4" />
-                <span>Välj Leverans- / Hämtningszon (Fast avgift & Tillägg)</span>
-              </div>
-              <p className="text-xs text-ink/70 font-sans">
-                Vi erbjuder anpassad möbeltransport med bud eller inlämning i vår verkstad.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                {zones.map((zone) => {
-                  const isSelected = selectedZone?.id === zone.id;
-                  return (
-                    <div
-                      key={zone.id}
-                      onClick={() => setSelectedZone(zone)}
-                      className={`p-4 border cursor-pointer transition-all ${
-                        isSelected
-                          ? "border-wood bg-canvas ring-1 ring-wood shadow-xs"
-                          : "border-stone bg-stone-light/50 hover:bg-canvas"
-                      }`}
-                    >
-                      <div className="flex justify-between items-start text-xs font-mono">
-                        <span className="font-semibold text-ink">{zone.name}</span>
-                        <span className="font-bold text-wood">
-                          {zone.surcharge === 0 ? "Ingår (0 kr)" : `+${formatSEK(zone.surcharge)}`}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-ink/70 font-sans mt-1">{zone.description}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
           </div>
 
           <div className="lg:col-span-4 space-y-6">
@@ -192,17 +123,12 @@ export default function VarukorgPage() {
 
               <div className="space-y-3 text-xs font-mono">
                 <div className="flex justify-between text-ink/80">
-                  <span>Delsumma artiklar</span>
+                  <span>Delsumma</span>
                   <span>{formatSEK(subtotal)}</span>
                 </div>
 
-                <div className="flex justify-between text-ink/80">
-                  <span>Leverans ({selectedZone?.name || "Stockholm"})</span>
-                  <span>{(selectedZone?.surcharge ?? 0) === 0 ? "0 kr" : formatSEK(deliveryFee)}</span>
-                </div>
-
                 <div className="flex justify-between text-ink/60 border-t border-stone/50 pt-2">
-                  <span>Varav 25% moms</span>
+                  <span>{taxEnabled ? `Varav ${Math.round((taxRate || 0) * 100)}% moms` : "Moms"}</span>
                   <span>{formatSEK(taxAmount)}</span>
                 </div>
 
@@ -224,10 +150,6 @@ export default function VarukorgPage() {
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-wood" />
                   <span>5 års hantverksgaranti & äkthetssigill</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Truck className="w-4 h-4 text-wood" />
-                  <span>Spårbar leverans med ordernummer</span>
                 </div>
               </div>
             </div>

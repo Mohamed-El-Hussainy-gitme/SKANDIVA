@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { serverDb } from "@/lib/supabaseServer";
+import { serverDb } from "@/lib/db";
 import { Order, OrderItem } from "@/types";
-import { generateOrderNumber, calculateOrderFinancials, initializeTrackingEvents } from "@/lib/engine";
+import { generateOrderNumber, calculateOrderFinancials } from "@/lib/engine";
 import { authenticateAdminRequest } from "@/lib/auth";
 import { logger } from "@/lib/logger";
+import { supabaseAdmin } from "@/lib/db";
 
 export async function GET(request: Request) {
   try {
@@ -44,73 +45,45 @@ export async function POST(request: Request) {
     const productsToMarkSold: string[] = [];
 
     for (const item of body.items as OrderItem[]) {
-      if (item.type === "product") {
-        const product = await serverDb.getProductById(item.referenceId);
-        if (!product) {
-          return NextResponse.json(
-            { success: false, error: `Produkten "${item.title}" finns inte längre i sortimentet.` },
-            { status: 400 }
-          );
-        }
-
-        if (product.stockStatus === "sald") {
-          return NextResponse.json(
-            { success: false, error: `Tyvärr har "${product.name}" precis blivit såld till en annan kund.` },
-            { status: 409 }
-          );
-        }
-
-        // Check variant price if applicable
-        let unitPrice = product.basePrice;
-        if (item.selectedVariantName) {
-          const variant = product.variants.find((v) => v.name === item.selectedVariantName);
-          if (variant) {
-            unitPrice += variant.priceDelta;
-          }
-        }
-
-        const totalPrice = unitPrice * (item.quantity || 1);
-        calculatedItemsTotal += totalPrice;
-        validatedItems.push({
-          ...item,
-          unitPrice,
-          totalPrice,
-        });
-
-        productsToMarkSold.push(product.id);
-      } else if (item.type === "service") {
-        const service = (await serverDb.getServiceBySlug(item.referenceId)) || (await serverDb.getServices()).find((s) => s.id === item.referenceId);
-        const basePrice = service ? service.basePrice : item.unitPrice || 4900;
-        let totalPrice = basePrice;
-
-        // Check selected addons
-        if (Array.isArray(item.selectedAddons) && item.selectedAddons.length > 0 && service) {
-          for (const addonName of item.selectedAddons) {
-            const matchedAddon = service.addons.find((a) => addonName.includes(a.name) || a.name === addonName);
-            if (matchedAddon) {
-              totalPrice += matchedAddon.price;
-            }
-          }
-        }
-
-        calculatedItemsTotal += totalPrice * (item.quantity || 1);
-        validatedItems.push({
-          ...item,
-          unitPrice: totalPrice,
-          totalPrice: totalPrice * (item.quantity || 1),
-        });
+      const product = await serverDb.getProductById(item.referenceId);
+      if (!product) {
+        return NextResponse.json(
+          { success: false, error: `Produkten "${item.title}" finns inte längre i sortimentet.` },
+          { status: 400 }
+        );
       }
+
+      if (product.stockStatus === "sald") {
+        return NextResponse.json(
+          { success: false, error: `Tyvärr har "${product.name}" precis blivit såld till en annan kund.` },
+          { status: 409 }
+        );
+      }
+
+      let unitPrice = product.basePrice;
+      if (product.materialIds.length > 0 && !item.selectedMaterial) {
+        return NextResponse.json({ success: false, error: `Välj material för produkten "${product.name}".` }, { status: 400 });
+      }
+      if (item.selectedMaterial && product.materialIds.length > 0) {
+        const materials = await serverDb.getMaterials();
+        const material = materials.find((entry) => entry.name === item.selectedMaterial && product.materialIds.includes(entry.id));
+        if (!material) {
+          return NextResponse.json({ success: false, error: `اختر خامة صحيحة للمنتج "${product.name}".` }, { status: 400 });
+        }
+        unitPrice += material.price;
+      }
+
+      const totalPrice = unitPrice * (item.quantity || 1);
+      calculatedItemsTotal += totalPrice;
+      validatedItems.push({ ...item, unitPrice, totalPrice });
+      productsToMarkSold.push(product.id);
     }
 
-    // 3. Verify Delivery Zone Fee
-    const zones = await serverDb.getDeliveryZones();
-    const matchedZone = zones.find((z) => z.id === body.deliveryZoneId) || zones[0];
-    const deliveryFee = matchedZone ? matchedZone.surcharge : 0;
+    // 3. Compute Financials
+    const settings = await serverDb.getSettings();
+    const financials = calculateOrderFinancials(calculatedItemsTotal, settings.taxEnabled, settings.taxRate);
 
-    // 4. Compute Financials & moms
-    const financials = calculateOrderFinancials(calculatedItemsTotal, deliveryFee);
-
-    // 5. Guaranteed Collision-Free Order Number (Retry Loop)
+    // 4. Guaranteed Collision-Free Order Number
     let orderNumber = generateOrderNumber();
     for (let attempt = 0; attempt < 5; attempt++) {
       const existing = await serverDb.getOrderByNumber(orderNumber);
@@ -119,21 +92,17 @@ export async function POST(request: Request) {
     }
 
     const orderId = `order-${Date.now()}`;
-    const trackingEvents = initializeTrackingEvents(orderId);
 
     const newOrder: Order = {
       id: orderId,
       orderNumber,
-      orderType: body.orderType || (validatedItems.some((i) => i.type === "service") ? "service" : "product"),
+      orderType: "product",
       customerName: body.customerName.trim(),
       customerEmail: body.customerEmail.trim(),
       customerPhone: body.customerPhone.trim(),
       customerAddress: body.customerAddress || "",
       customerPostalCode: body.customerPostalCode || "",
       customerCity: body.customerCity || "Stockholm",
-      deliveryZoneId: matchedZone?.id || "zone-stockholm-innerstad",
-      deliveryZoneName: matchedZone?.name || "Stockholm Innerstad & Närförort",
-      deliveryFee,
       subtotal: financials.subtotal,
       taxAmount: financials.taxAmount,
       totalAmount: financials.totalAmount,
@@ -141,21 +110,20 @@ export async function POST(request: Request) {
       paymentStatus: "betald",
       status: "mottagen",
       items: validatedItems,
-      trackingEvents,
       estimatedCompletionDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split("T")[0],
       workshopNotes: body.workshopNotes?.trim() || "Order mottagen via webbutiken.",
-      assignedUpholsterer: "Mästare Lars Bergström",
+      assignedUpholsterer: "Mästare",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    // 6. Save order to Supabase
+    // 5. Save order
     const created = await serverDb.createOrder(newOrder);
 
-    // 7. Atomically lock stock status (UPDATE WHERE stock_status != 'sald' to prevent race conditions)
+    // 6. Atomically mark products as sold
     for (const prodId of productsToMarkSold) {
       try {
-        const { error: stockError } = await (await import("@/lib/supabaseServer")).supabaseAdmin
+        const { error: stockError } = await supabaseAdmin
           .from("products")
           .update({ stock_status: "sald" })
           .eq("id", prodId)

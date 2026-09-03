@@ -1,9 +1,9 @@
 "use client";
-
+import { formatSEK } from "@/lib/utils";
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useCart, formatSEK } from "@/lib/store";
+import { useCart } from "@/lib/store";
 import { X, Trash2, Plus, Minus, ArrowRight, ShieldCheck, Truck } from "lucide-react";
 
 export const CartDrawer: React.FC = () => {
@@ -12,7 +12,7 @@ export const CartDrawer: React.FC = () => {
     itemCount,
     subtotal,
     totalAmount,
-    selectedZone,
+    
     isDrawerOpen,
     setIsDrawerOpen,
     removeItem,
@@ -70,7 +70,7 @@ export const CartDrawer: React.FC = () => {
                     Till Butiken
                   </Link>
                   <Link
-                    href="/tjanster/lamino-express"
+                    href="/begar-offert"
                     onClick={() => setIsDrawerOpen(false)}
                     className="w-full py-2.5 px-4 border border-wood text-wood font-mono text-xs uppercase tracking-wider text-center hover:bg-wood hover:text-canvas transition-colors"
                   >
@@ -109,12 +109,6 @@ export const CartDrawer: React.FC = () => {
 
                       {item.designerOrModel && (
                         <p className="text-[11px] font-mono text-wood">{item.designerOrModel}</p>
-                      )}
-
-                      {item.selectedVariantName && (
-                        <p className="text-[11px] text-ink/70 mt-0.5">
-                          Val: <span className="font-medium">{item.selectedVariantName}</span>
-                        </p>
                       )}
 
                       {item.selectedMaterial && (
@@ -169,13 +163,12 @@ export const CartDrawer: React.FC = () => {
           {/* Drawer Footer */}
           {items.length > 0 && (
             <div className="p-6 border-t border-stone bg-stone-light/40 space-y-4">
-              {/* Delivery info snippet */}
               <div className="flex items-center justify-between text-xs font-mono text-ink/70">
                 <span className="flex items-center gap-1.5">
                   <Truck className="w-3.5 h-3.5 text-wood" />
-                  {selectedZone?.name || "Stockholm"}
+                  Upphämtning eller leverans enligt överenskommelse
                 </span>
-                <span>{(selectedZone?.surcharge || 0) === 0 ? "Ingår (0 kr)" : formatSEK(selectedZone?.surcharge || 0)}</span>
+                <span>Kontakta oss</span>
               </div>
 
               {/* Subtotal & Total */}

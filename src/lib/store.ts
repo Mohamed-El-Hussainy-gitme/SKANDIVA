@@ -1,19 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { OrderItem, DeliveryZone } from "@/types";
-import { INITIAL_DELIVERY_ZONES } from "@/data/initialData";
+import { OrderItem } from "@/types";
 
 const CART_STORAGE_KEY = "skandiva_cart_items";
-const ZONE_STORAGE_KEY = "skandiva_selected_zone";
-
-export const formatSEK = (amount: number): string => {
-  return new Intl.NumberFormat("sv-SE", {
-    style: "currency",
-    currency: "SEK",
-    maximumFractionDigits: 0,
-  }).format(amount).replace("SEK", "kr");
-};
 
 // Global event emitter for synchronized reactive cart
 type Listener = () => void;
@@ -37,12 +27,10 @@ export const cartStore = {
   addItem: (item: OrderItem): void => {
     if (typeof window === "undefined") return;
     const current = cartStore.getItems();
-    // Check if identical item already exists (same referenceId + variant/addons)
     const existingIndex = current.findIndex(
       (i) =>
         i.referenceId === item.referenceId &&
-        i.selectedVariantName === item.selectedVariantName &&
-        JSON.stringify(i.selectedAddons || []) === JSON.stringify(item.selectedAddons || [])
+          i.selectedMaterial === item.selectedMaterial
     );
 
     if (existingIndex > -1) {
@@ -85,22 +73,6 @@ export const cartStore = {
     emitChange();
   },
 
-  getSelectedZone: (): DeliveryZone => {
-    if (typeof window === "undefined") return INITIAL_DELIVERY_ZONES[0];
-    try {
-      const stored = localStorage.getItem(ZONE_STORAGE_KEY);
-      return stored ? JSON.parse(stored) : INITIAL_DELIVERY_ZONES[0];
-    } catch {
-      return INITIAL_DELIVERY_ZONES[0];
-    }
-  },
-
-  setSelectedZone: (zone: DeliveryZone): void => {
-    if (typeof window === "undefined") return;
-    localStorage.setItem(ZONE_STORAGE_KEY, JSON.stringify(zone));
-    emitChange();
-  },
-
   subscribe: (listener: Listener) => {
     listeners.add(listener);
     return () => {
@@ -111,42 +83,45 @@ export const cartStore = {
 
 export function useCart() {
   const [items, setItems] = useState<OrderItem[]>([]);
-  const [selectedZone, setSelectedZoneState] = useState<DeliveryZone>(INITIAL_DELIVERY_ZONES[0]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [taxEnabled, setTaxEnabled] = useState(true);
+  const [taxRate, setTaxRate] = useState(0.25);
 
   useEffect(() => {
     setItems(cartStore.getItems());
-    setSelectedZoneState(cartStore.getSelectedZone());
+    fetch("/api/settings").then((response) => response.json()).then((data) => {
+      if (data.success) {
+        setTaxEnabled(data.data.taxEnabled);
+        setTaxRate(data.data.taxRate);
+      }
+    }).catch(() => undefined);
 
     const unsubscribe = cartStore.subscribe(() => {
       setItems(cartStore.getItems());
-      setSelectedZoneState(cartStore.getSelectedZone());
     });
 
     return unsubscribe;
   }, []);
 
-  const currentZone = selectedZone || INITIAL_DELIVERY_ZONES[0];
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = items.reduce((acc, item) => acc + item.totalPrice, 0);
-  const deliveryFee = currentZone?.surcharge || 0;
-  const taxAmount = (subtotal + deliveryFee) * 0.2; // 25% moms of net (20% of gross)
-  const totalAmount = subtotal + deliveryFee;
+  // 25% Swedish VAT included in price (20% of gross = the tax portion)
+  const taxAmount = taxEnabled ? Math.round(subtotal * (taxRate / (1 + taxRate))) : 0;
+  const totalAmount = subtotal;
 
   return {
     items,
     itemCount,
     subtotal,
-    deliveryFee,
     taxAmount,
     totalAmount,
-    selectedZone: currentZone,
+    taxEnabled,
+    taxRate,
     isDrawerOpen,
     setIsDrawerOpen,
     addItem: cartStore.addItem,
     removeItem: cartStore.removeItem,
     updateQuantity: cartStore.updateQuantity,
     clearCart: cartStore.clearCart,
-    setSelectedZone: cartStore.setSelectedZone,
   };
 }

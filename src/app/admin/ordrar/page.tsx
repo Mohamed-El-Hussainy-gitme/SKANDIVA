@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Order, QuoteRequest, OrderStatus, QuoteStatus } from "@/types";
-import { formatSEK } from "@/lib/store";
+import { formatSEK } from "@/lib/utils";
 import { OrderStatusBadge, QuoteStatusBadge } from "@/components/ui/Badge";
 import { WhatsAppChatModal } from "@/components/admin/WhatsAppChatModal";
 import { 
@@ -12,8 +13,9 @@ import {
   Loader2
 } from "lucide-react";
 
-export default function AdminOrdrarPipelinePage() {
-  const [activeTab, setActiveTab] = useState<"all" | "orders" | "quotes">("all");
+export function AdminOrdrarPipelinePage() {
+  const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState<"all" | "orders" | "quotes">(pathname === "/admin/offerter" ? "quotes" : "orders");
   const [orders, setOrders] = useState<Order[]>([]);
   const [quotes, setQuotes] = useState<QuoteRequest[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,7 +86,7 @@ export default function AdminOrdrarPipelinePage() {
   const handleOpenWhatsAppForQuote = (quote: QuoteRequest) => {
     setWhatsAppTarget({
       referenceNumber: quote.quoteNumber,
-      customerName: quote.isB2B ? `${quote.contactName} (${quote.companyName})` : quote.contactName,
+      customerName: quote.contactName,
       customerPhone: quote.phone,
       furnitureDetails: `${quote.designerModel || quote.furnitureType} (${quote.numberOfPieces} st)`,
       notes: quote.notes,
@@ -200,11 +202,11 @@ export default function AdminOrdrarPipelinePage() {
             Verkstadens Orderflöde & Ärendehantering
           </span>
           <h1 className="font-serif text-3xl sm:text-4xl text-ink font-normal mt-1">
-            Pipeline & Ärendeinspektion
+            {pathname === "/admin/offerter" ? "Offertförfrågningar" : "Ordrar"}
           </h1>
         </div>
 
-        <div className="flex border border-stone text-xs font-mono bg-canvas">
+        {pathname !== "/admin/offerter" && <div className="flex border border-stone text-xs font-mono bg-canvas">
           <button
             onClick={() => setActiveTab("all")}
             className={`py-2 px-3 ${activeTab === "all" ? "bg-ink text-canvas font-bold" : "text-ink hover:bg-stone-light"}`}
@@ -223,7 +225,7 @@ export default function AdminOrdrarPipelinePage() {
           >
             Offerter ({quotes.length})
           </button>
-        </div>
+        </div>}
       </div>
 
       {/* Main Grid: List on Left, Inspector on Right */}
@@ -295,7 +297,7 @@ export default function AdminOrdrarPipelinePage() {
                           <div className="flex items-center gap-2">
                             <span className="font-bold text-ink">{quote.quoteNumber}</span>
                             <span className="text-ink/60">
-                              {quote.isB2B ? quote.companyName : quote.contactName}
+                              {quote.contactName}
                             </span>
                           </div>
                           <QuoteStatusBadge status={quote.status} />
@@ -399,10 +401,6 @@ export default function AdminOrdrarPipelinePage() {
 
               <div className="space-y-2 text-xs font-mono text-ink/80 pt-2 border-t border-stone/60">
                 <div className="flex justify-between">
-                  <span className="text-wood">Leveranszon:</span>
-                  <span>{selectedOrder.deliveryZoneName}</span>
-                </div>
-                <div className="flex justify-between">
                   <span className="text-wood">Gatuadress:</span>
                   <span>{selectedOrder.customerAddress}, {selectedOrder.customerCity}</span>
                 </div>
@@ -427,7 +425,7 @@ export default function AdminOrdrarPipelinePage() {
                     {selectedQuote.quoteNumber}
                   </h3>
                   <span className="text-xs font-sans text-ink/70">
-                    {selectedQuote.isB2B ? selectedQuote.companyName : selectedQuote.contactName} ({selectedQuote.email})
+                    {selectedQuote.contactName} ({selectedQuote.email})
                   </span>
                 </div>
 
@@ -530,3 +528,5 @@ export default function AdminOrdrarPipelinePage() {
     </div>
   );
 }
+
+export default AdminOrdrarPipelinePage;

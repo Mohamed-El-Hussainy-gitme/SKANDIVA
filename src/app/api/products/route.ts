@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { serverDb } from "@/lib/supabaseServer";
+import { serverDb } from "@/lib/db";
 import { Product } from "@/types";
 import { authenticateAdminRequest } from "@/lib/auth";
 import { logger } from "@/lib/logger";
@@ -23,17 +23,20 @@ export async function POST(request: Request) {
 
     const body = await request.json();
 
-    if (!body.name || !body.slug || !body.basePrice) {
-      return NextResponse.json({ success: false, error: "Namn, slug och baspris krävs." }, { status: 400 });
+    if (!body.name || !body.basePrice) {
+      return NextResponse.json({ success: false, error: "Namn och baspris krävs." }, { status: 400 });
     }
 
     const newProduct: Product = {
       id: body.id || `prod-${Date.now()}`,
-      slug: body.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-"),
+      slug: body.slug
+        ? body.slug.trim().toLowerCase().replace(/[^a-z0-9-]/g, "-")
+        : body.name.toLowerCase().replace(/[åä]/g, "a").replace(/ö/g, "o").replace(/[^a-z0-9]+/g, "-"),
       name: body.name.trim(),
       designer: body.designer || "Skandinavisk Formgivare",
       model: body.model || body.name,
       category: body.category || "Fatolj",
+      collection: body.collection || "none",
       categoryNameSwedish: body.categoryNameSwedish || "Fåtöljer",
       basePrice: Number(body.basePrice),
       description: body.description || "",
@@ -44,10 +47,10 @@ export async function POST(request: Request) {
       stockStatus: body.stockStatus || "i_lager",
       primaryImage: body.primaryImage || "/IMG_0948.png",
       galleryImages: Array.isArray(body.galleryImages) ? body.galleryImages : [],
+      materialIds: Array.isArray(body.materialIds) ? body.materialIds : [],
       beforeImage: body.beforeImage || undefined,
       afterImage: body.afterImage || undefined,
       featured: Boolean(body.featured),
-      variants: Array.isArray(body.variants) ? body.variants : [],
       createdAt: new Date().toISOString(),
     };
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { serverDb } from "@/lib/supabaseServer";
+import { serverDb } from "@/lib/db";
 import { QuoteRequest } from "@/types";
 import { generateQuoteNumber } from "@/lib/engine";
 import { authenticateAdminRequest } from "@/lib/auth";
@@ -36,9 +36,6 @@ export async function POST(request: Request) {
     const newQuote: QuoteRequest = {
       id: quoteId,
       quoteNumber,
-      isB2B: Boolean(body.isB2B),
-      companyName: body.companyName || undefined,
-      orgNumber: body.orgNumber || undefined,
       contactName: body.contactName.trim(),
       email: body.email.trim(),
       phone: body.phone.trim(),

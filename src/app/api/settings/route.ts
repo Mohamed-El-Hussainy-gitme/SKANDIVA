@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { serverDb } from "@/lib/supabaseServer";
+import { serverDb } from "@/lib/db";
 import { authenticateAdminRequest } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 

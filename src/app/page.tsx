@@ -1,564 +1,312 @@
 import React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { BeforeAfterSlider } from "@/components/ui/BeforeAfterSlider";
-import { ConditionBadge } from "@/components/ui/Badge";
-import { serverDb } from "@/lib/supabaseServer";
+import { serverDb } from "@/lib/db";
 import { formatSEK } from "@/lib/utils";
-import { Product, Review } from "@/types";
-import {
-  ArrowRight,
-  Star,
-  Clock,
-  ShieldCheck,
-  Truck,
-  ChevronRight,
-  Building2,
-  Sparkles,
-  Scissors,
-  CheckCircle2,
-  Layers
-} from "lucide-react";
+import { Product, GalleryItem } from "@/types";
+import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { BeforeAfterSlider } from "@/components/ui/BeforeAfterSlider";
 
-export const revalidate = 60; // Incremental Static Regeneration for Google SEO (every 60s)
+export const revalidate = 60;
 
 export default async function HomePage() {
   const settings = await serverDb.getSettings();
 
-  // Query live Supabase database on server
-  let products: Product[] = [];
-  let reviews: Review[] = [];
+  let renoverade: Product[] = [];
+  let galleryItems: GalleryItem[] = [];
 
   try {
-    const [fetchedProducts, fetchedReviews] = await Promise.all([
-      serverDb.getProducts(),
-      serverDb.getReviews(),
-    ]);
-    products = fetchedProducts;
-    reviews = fetchedReviews;
+    renoverade = await serverDb.getProducts();
+    galleryItems = await serverDb.getGalleryItems();
   } catch (e) {
-    console.error("Home page DB fetch fallback", e);
+    console.error("Home page DB fetch error", e);
   }
 
-  const featuredProducts = products.slice(0, 4);
+  const selectedFeatured = renoverade.filter((product) => product.featured).slice(0, 4);
+  const featuredRenoverade = selectedFeatured.length > 0 ? selectedFeatured : renoverade.slice(0, 4);
+  const featuredGallery = galleryItems.slice(0, 2);
 
   return (
-    <div className="space-y-0 pb-0 overflow-hidden bg-[#F6F3ED] text-[#1C1917]">
+    <div className="bg-stone-50 text-stone-900">
 
-      {/* ═══════════════════════════════════════════════════════════════
-          1. HERO SECTION — DYNAMIC CMS DRIVEN (NORDIC LUXURY EDITORIAL)
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="relative w-full min-h-[88vh] flex items-end overflow-hidden">
-        {/* Atmospheric Workshop Image */}
+      {/* ════════════════════════════════════════════
+          1. HERO
+      ════════════════════════════════════════════ */}
+      <section className="relative w-full h-[78vh] min-h-[560px] flex items-end overflow-hidden">
         <Image
-          src={settings.heroImage || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=2200&q=85"}
+          src={settings.heroImage || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=2400&q=85"}
           alt="Skandiva Tapetserarverkstad Stockholm"
           fill
           priority
-          className="object-cover object-center scale-[1.02] transform transition-transform duration-1000 ease-out"
+          className="object-cover object-center"
+          sizes="100vw"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-stone-950/60 to-transparent" />
 
-        {/* Dark Gradient Overlays for Maximum Text Legibility & Depth */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1C1917]/95 via-[#1C1917]/40 to-[#1C1917]/20" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#1C1917]/80 via-transparent to-transparent" />
-
-        {/* Content Container */}
-        <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 pb-16 sm:pb-20 w-full">
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 pb-20">
           <div className="max-w-2xl space-y-6">
+            <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-stone-300">
+              <span className="w-2 h-2 rounded-full bg-stone-400 animate-pulse" />
+              {settings.heroBadge || "Tapetserarverkstad • Södermalm, Stockholm"}
+            </span>
 
-            {/* Emblem Pill & Master Badge */}
-            <div className="inline-flex items-center gap-3 px-3.5 py-1.5 bg-black/40 backdrop-blur-md border border-white/20 rounded-full text-white text-xs font-mono tracking-wider">
-              <span className="w-2 h-2 rounded-full bg-[#DCD5C8] animate-pulse" />
-              <span className="uppercase text-[11px]">{settings.heroBadge}</span>
-            </div>
-
-            {/* Main Editorial Headline */}
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl text-[#F6F3ED] font-normal leading-[1.1] tracking-tight">
-              {settings.heroHeadline}
+            <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl text-white font-normal leading-[1.05] tracking-tight">
+              {settings.heroHeadline || "Vi bevarar det svenska designarvet."}
             </h1>
 
-            {/* Narrative Subtitle */}
-            <p className="text-sm sm:text-base text-[#F6F3ED]/85 leading-relaxed font-sans max-w-xl font-normal">
-              {settings.heroSubtitle}
+            <p className="text-base text-white/80 leading-relaxed font-sans max-w-xl">
+              {settings.heroSubtitle || "Specialiserad verkstad för omklädsel och renovering av Lamino, DUX och Bruno Mathsson. Vi säljer även helrenoverade klassiker i vår butik."}
             </p>
 
-            {/* Action CTA Buttons */}
-            <div className="pt-2 flex flex-wrap items-center gap-3.5">
+            <div className="pt-2 flex flex-wrap gap-4">
               <Link
-                href="/tjanster/lamino-express"
-                className="px-7 py-3.5 bg-[#F6F3ED] text-[#1C1917] font-mono text-xs sm:text-sm uppercase tracking-wider font-semibold hover:bg-white transition-all rounded-full shadow-lg flex items-center gap-2 transform hover:-translate-y-0.5"
+                href="/begar-offert"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-white text-stone-900 font-mono text-xs uppercase tracking-widest font-bold hover:bg-stone-100 transition-colors shadow-lg"
               >
-                <span>Omklädsel Lamino</span>
-                <ArrowRight className="w-4 h-4 text-[#5B4433]" />
+                Begär Offert <ArrowRight className="w-4 h-4" />
               </Link>
-
               <Link
                 href="/butik"
-                className="px-7 py-3.5 bg-white/15 backdrop-blur-md text-[#F6F3ED] border border-white/30 font-mono text-xs sm:text-sm uppercase tracking-wider font-semibold hover:bg-white/25 transition-all rounded-full"
+                className="inline-flex items-center gap-2 px-8 py-4 bg-transparent text-white border border-white/40 font-mono text-xs uppercase tracking-widest hover:bg-white/10 transition-colors"
               >
                 Utforska Butik
               </Link>
-
-              <Link
-                href="/tjanster/offert"
-                className="px-6 py-3.5 bg-white/10 backdrop-blur-md text-[#F6F3ED] border border-white/20 font-mono text-xs sm:text-sm uppercase tracking-wider font-medium hover:bg-white/20 transition-all rounded-full hidden sm:inline-flex"
-              >
-                Begär Offert
-              </Link>
             </div>
 
-            {/* Micro Trust Bullets */}
-            <div className="pt-4 flex flex-wrap items-center gap-6 text-[11px] font-mono text-[#F6F3ED]/75">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#DCD5C8]" />
-                10–14 dagars garanterad ledtid
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#DCD5C8]" />
-                5 års hantverksgaranti
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-3.5 h-3.5 text-[#DCD5C8]" />
-                Möbelbud i Storstockholm
-              </span>
+            <div className="pt-2 flex flex-wrap gap-6 text-[11px] font-mono text-white/65">
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-stone-300" />10–14 dagars ledtid</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-stone-300" />5 års hantverksgaranti</span>
+              <span className="flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-stone-300" />Åsögatan • Södermalm</span>
             </div>
-
           </div>
         </div>
       </section>
 
+      {/* ════════════════════════════════════════════
+          2. SNABBA VÄGAR
+      ════════════════════════════════════════════ */}
+      <section className="bg-white border-b border-stone-200">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 grid grid-cols-1 sm:grid-cols-3">
+          {[
+            { eyebrow: "Till salu nu", title: "Utforska butiken", text: "Helrenoverade designklassiker redo för ett nytt hem.", href: "/butik" },
+            { eyebrow: "För din möbel", title: "DUX & Mathsson", text: "Kuddar, väv och klädsel för ikoniska modeller.", href: "/dux-omkladsel" },
+            { eyebrow: "Signaturarbete", title: "Lamino i fårskinn", text: "Varsam renovering av Yngve Ekströms klassiker.", href: "/lamino-omkladsel" },
+          ].map((path) => (
+            <Link key={path.href} href={path.href} className="group border-t sm:border-t-0 sm:border-r last:border-r-0 border-stone-200 px-0 py-7 sm:px-7 hover:bg-stone-50 transition-colors first:sm:pl-0">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-stone-500">{path.eyebrow}</span>
+              <h2 className="font-serif text-2xl text-stone-900 mt-2">{path.title}</h2>
+              <p className="text-sm text-stone-600 leading-relaxed mt-2 max-w-xs">{path.text}</p>
+              <span className="inline-flex items-center gap-2 mt-5 font-mono text-[10px] uppercase tracking-widest text-stone-800 group-hover:gap-3 transition-all">Se mer <ArrowRight className="w-3.5 h-3.5" /></span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          2. BRAND HERITAGE & ATELIER SIGNATURE (SKANDIVA EMBLEM)
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-20 bg-[#F6F3ED] border-b border-[#DCD5C8]">
+      {/* ════════════════════════════════════════════
+          3. KLASSIKER I LAGER
+      ════════════════════════════════════════════ */}
+      <section className="py-16 bg-stone-50 border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            
-            {/* Left: Authentic Brand Crest */}
-            <div className="lg:col-span-4 flex flex-col items-center text-center p-8 bg-white/60 border border-[#DCD5C8] shadow-sm rounded-sm">
-              <div className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden border-2 border-[#5B4433]/30 shadow-md bg-[#F6F3ED] mb-4">
-                <Image
-                  src="/skandiva_classic_logo.png"
-                  alt="Skandiva Stockholm Sigill"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="font-serif text-2xl font-bold tracking-tight text-[#1C1917]">
-                SKANDIVA
-              </h3>
-              <p className="font-mono text-xs text-[#5B4433] uppercase tracking-[0.2em] mt-1">
-                Tapetserarverkstad • Stockholm
-              </p>
-              <p className="font-mono text-[10px] text-[#1C1917]/50 uppercase tracking-widest mt-2 border-t border-[#DCD5C8] pt-2 w-full">
-                Köp • Sälj • Renovering
-              </p>
+          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5 mb-10">
+            <div className="space-y-2">
+              <span className="font-mono text-xs uppercase tracking-widest text-stone-500">Klassiker i Lager</span>
+              <h2 className="font-serif text-4xl sm:text-5xl text-stone-900 font-normal">Vår Butik</h2>
+              <p className="text-stone-600 font-sans text-sm max-w-lg leading-relaxed">Helrenoverade designklassiker, redo för ett nytt hem.</p>
             </div>
-
-            {/* Right: The Preservation Manifesto */}
-            <div className="lg:col-span-8 space-y-5">
-              <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#5B4433]">
-                <Scissors className="w-4 h-4" />
-                <span>Traditionellt Hantverk • Södermalm</span>
-              </div>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#1C1917] font-normal leading-snug">
-                Vi bevarar och förädlar det svenska designarvet.
-              </h2>
-              <p className="text-sm sm:text-base text-[#1C1917]/80 font-sans leading-relaxed">
-                Varje möbel som lämnar vår verkstad på Åsögatan är renoverad med samma omsorg, precision och material som när den en gång skapades av Sveriges främsta formgivare. Vi byter slitna bärvävar, förnyar spiralfjädring och klär om med certifierat Skandilock-fårskinn eller vegetabiliskt garvat läder från Tärnsjö och Elmo.
-              </p>
-
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-3 border-t border-[#DCD5C8]">
-                <div>
-                  <span className="font-serif text-2xl sm:text-3xl font-bold text-[#5B4433] block">1 400+</span>
-                  <span className="text-xs font-mono text-[#1C1917]/70 uppercase">Möbler restaurerade</span>
-                </div>
-                <div>
-                  <span className="font-serif text-2xl sm:text-3xl font-bold text-[#5B4433] block">5 År</span>
-                  <span className="text-xs font-mono text-[#1C1917]/70 uppercase">Full hantverksgaranti</span>
-                </div>
-                <div>
-                  <span className="font-serif text-2xl sm:text-3xl font-bold text-[#5B4433] block">100%</span>
-                  <span className="text-xs font-mono text-[#1C1917]/70 uppercase">Cirkulärt återbruk</span>
-                </div>
-              </div>
-            </div>
-
+            <Link href="/butik" className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-stone-700 hover:text-stone-900 border-b border-stone-400 pb-1">Se hela butiken <ArrowRight className="w-4 h-4" /></Link>
           </div>
+          {featuredRenoverade.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
+              {featuredRenoverade.map((product) => (
+                <Link key={product.id} href={`/butik/${product.slug}`} className="group block">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-stone-100">
+                    <Image src={product.primaryImage || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=600&q=80"} alt={product.name} fill className="object-cover transition-transform duration-500 group-hover:scale-105" sizes="(max-width: 640px) 50vw, 25vw" />
+                    {product.stockStatus === "sald" && <span className="absolute left-2 top-2 bg-stone-900 px-2 py-1 text-[10px] font-mono uppercase text-white">Såld</span>}
+                  </div>
+                  <div className="pt-3 space-y-1"><h3 className="font-serif text-base text-stone-900 leading-tight">{product.name}</h3><p className="text-stone-500 text-xs font-mono">{product.designer}</p><p className="text-stone-900 font-bold font-mono text-sm">{formatSEK(product.basePrice)}</p></div>
+                </Link>
+              ))}
+            </div>
+          ) : <div className="border border-dashed border-stone-300 bg-white py-12 text-center text-sm text-stone-500">Butiken uppdateras med nya klassiker inom kort.</div>}
         </div>
       </section>
 
 
-      {/* ═══════════════════════════════════════════════════════════════
-          3. VÅR BUTIK — LIVE SUPABASE POWERED CATALOG
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-24 bg-[#FAFAF8]">
+      {/* ════════════════════════════════════════════
+          4. OMKLÄDSEL — LAMINO (Dedikerat fokus)
+      ════════════════════════════════════════════ */}
+      <section className="py-20 bg-[#8B7355] text-white">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-            
-            {/* Left Column */}
-            <div className="lg:col-span-3 space-y-5 lg:pt-4">
-              <span className="font-mono text-xs uppercase tracking-widest text-[#5B4433] block">
-                Klassiker i Lager
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#1C1917] font-normal">
-                Vår butik
-              </h2>
-              <p className="text-sm text-[#1C1917]/70 font-sans leading-relaxed">
-                Ett noga utvalt sortiment av skandinaviska designmöbler, egentillverkade dynsatser och tillbehör — nyklädda i vår ateljé och redo för omgående leverans.
-              </p>
-              <Link
-                href="/butik"
-                className="inline-flex items-center gap-2 px-5 py-3 border border-[#1C1917] text-[#1C1917] font-mono text-xs uppercase tracking-wider font-semibold hover:bg-[#1C1917] hover:text-[#F6F3ED] transition-colors"
-              >
-                <span>Till Butiken ({products.length} st)</span>
-                <ChevronRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* Right Column: 4-Up Grid (Clean & Borderless Fanins Style) */}
-            <div className="lg:col-span-9">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8">
-                {featuredProducts.map((product) => (
-                  <Link
-                    key={product.id}
-                    href={`/butik/${product.slug}`}
-                    className="group flex flex-col space-y-2.5"
-                  >
-                    <div className="relative aspect-square w-full bg-white/70 overflow-hidden flex items-center justify-center p-2">
-                      <Image
-                        src={product.primaryImage}
-                        alt={product.name}
-                        fill
-                        className="object-cover object-center group-hover:scale-105 transition-transform duration-500"
-                      />
-                      {product.stockStatus === "sald" ? (
-                        <div className="absolute top-2 left-2 bg-ink/90 text-canvas font-mono text-[10px] uppercase px-2 py-0.5 font-bold">
-                          Såld
-                        </div>
-                      ) : product.conditionGrade ? (
-                        <div className="absolute top-2 left-2">
-                          <ConditionBadge grade={product.conditionGrade} />
-                        </div>
-                      ) : null}
-                    </div>
-
-                    <div className="space-y-1">
-                      <span className="text-[10px] font-mono uppercase text-[#5B4433] block">
-                        {product.designer}
-                      </span>
-                      <h4 className="text-xs sm:text-sm font-sans font-normal text-[#1C1917] group-hover:text-[#5B4433] transition-colors line-clamp-2 uppercase">
-                        {product.name}
-                      </h4>
-                      <div className="pt-0.5">
-                        <span className="font-sans text-sm sm:text-base font-bold text-[#1C1917]">
-                          {formatSEK(product.basePrice)}
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-
-      {/* ═══════════════════════════════════════════════════════════════
-          4. LAMINO EXPRESS — LUXURY ACCENT SECTION
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="bg-[#8B7355] text-[#F6F3ED] py-16 sm:py-24 relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            
-            {/* Left */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-black/20 border border-white/20 rounded-full text-xs font-mono uppercase tracking-widest text-[#DCD5C8]">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Flaggskeppstjänst • Fast Pris</span>
-              </div>
-
-              <h2 className="font-serif text-4xl sm:text-5xl font-normal uppercase tracking-wide leading-tight text-white">
-                {settings.laminoTitle}
+              <span className="font-mono text-xs uppercase tracking-widest text-white/60">Specialitet</span>
+              <h2 className="font-serif text-4xl sm:text-5xl font-normal leading-tight">
+                {settings.laminoTitle || "Lamino Omklädsel i Fårskinn"}
               </h2>
-
-              <p className="text-sm sm:text-base leading-relaxed text-[#F6F3ED]/90 font-sans">
-                {settings.laminoDescription}
+              <p className="text-white/80 font-sans text-base leading-relaxed">
+                {settings.laminoDescription || "Har du en Lamino-fåtölj med slitet fårskinn eller trasig bärväv? Vi är specialiserade på Yngve Ekströms mästerverk och klär om med premiumfårskinn från Skandilock i klassiska kulörer som Scandinavian Grey, Offwhite, Charcoal och Sahara."}
               </p>
-
-              <div className="space-y-3 bg-black/15 p-5 border border-white/15 rounded-sm">
-                <div className="flex items-center justify-between text-xs font-mono border-b border-white/10 pb-2">
-                  <span>Omklädsel Lamino Fåtölj (inkl. fårskinn)</span>
-                  <span className="font-bold text-white">{formatSEK(settings.laminoPrice)}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs font-mono border-b border-white/10 pb-2">
-                  <span>Tillägg: Tillhörande Fotpall</span>
-                  <span className="font-bold text-white">+1 900 kr</span>
-                </div>
-                <div className="flex items-center justify-between text-xs font-mono text-[#DCD5C8]">
-                  <span>Ledtid i verkstaden</span>
-                  <span className="font-bold">10–14 arbetsdagar</span>
-                </div>
-              </div>
-
-              <div className="pt-2 flex flex-wrap gap-4 items-center">
-                <Link
-                  href="/tjanster/lamino-express"
-                  className="px-7 py-3.5 bg-white text-[#1C1917] font-mono text-xs uppercase tracking-wider font-bold hover:bg-[#F6F3ED] transition-colors rounded-full shadow-md flex items-center gap-2"
-                >
-                  <span>Konfigurera & Boka Lamino</span>
-                  <ArrowRight className="w-4 h-4 text-[#5B4433]" />
+              <ul className="space-y-2.5 pt-2">
+                {[
+                  "Certifierat Skandilock-fårskinn (högsta slitstyrka)",
+                  "Ny bärväv i kraftig natur/linne vid behov",
+                  "Översyn och limning av trästomme",
+                  "5 års garanti på hantverket",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-sm font-sans text-white/90">
+                    <CheckCircle2 className="w-4 h-4 text-white/70 shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="flex flex-wrap gap-4 pt-4">
+                <Link href="/lamino-omkladsel" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-stone-900 font-mono text-xs uppercase tracking-widest font-bold hover:bg-stone-100 transition-colors">
+                  Läs om Lamino-omklädsel <ArrowRight className="w-4 h-4" />
                 </Link>
-                <Link
-                  href="/tjanster/offert"
-                  className="font-mono text-xs uppercase tracking-widest text-[#F6F3ED] border-b border-white/40 hover:border-white pb-0.5 transition-colors"
-                >
-                  Har du andra modeller? Skicka förfrågan →
+                <Link href="/begar-offert" className="inline-flex items-center gap-2 px-6 py-4 border border-white/40 text-white font-mono text-xs uppercase tracking-widest hover:bg-white/10 transition-colors">
+                  Begär Offert
                 </Link>
               </div>
             </div>
-
-            {/* Right */}
-            <div className="relative aspect-[4/3] rounded-sm overflow-hidden shadow-2xl border-4 border-white/10">
+            <div className="relative aspect-square bg-white/10 overflow-hidden">
               <Image
                 src={settings.laminoImage || "/IMG_0948.png"}
-                alt="Lamino omklädd i fårskinn hos Skandiva"
+                alt="Lamino fåtölj omklädd i fårskinn hos Skandiva"
                 fill
                 className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
               />
-              <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1.5 text-[10px] font-mono text-white rounded-none border border-white/20">
-                Äkta Gotlandsfårskinn • Skandilock
-              </div>
             </div>
-
           </div>
         </div>
       </section>
 
 
-      {/* ═══════════════════════════════════════════════════════════════
-          5. INTERACTIVE BEFORE & AFTER (FÖRE & EFTER)
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-24 bg-white border-b border-[#DCD5C8]">
+      {/* ════════════════════════════════════════════
+          4. OMKLÄDSEL — DUX & BRUNO MATHSSON
+      ════════════════════════════════════════════ */}
+      <section className="py-20 bg-stone-900 text-white">
         <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
-            
-            <div className="lg:col-span-5 space-y-5">
-              <div className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#5B4433]">
-                <Layers className="w-4 h-4" />
-                <span>Verkstadsgalleri • Före & Efter</span>
-              </div>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#1C1917] font-normal leading-snug">
-                {settings.beforeAfterTitle}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="relative aspect-[4/3] bg-stone-800 overflow-hidden order-2 lg:order-1">
+              <Image
+                src={settings.duxPageImage || "https://images.unsplash.com/photo-1580481077111-e4014902c38d?auto=format&fit=crop&w=1200&q=80"}
+                alt="DUX och Bruno Mathsson omklädsel i anilinläder"
+                fill
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+            </div>
+            <div className="space-y-6 order-1 lg:order-2">
+              <span className="font-mono text-xs uppercase tracking-widest text-stone-400">Specialitet</span>
+              <h2 className="font-serif text-4xl sm:text-5xl font-normal leading-tight">
+                {settings.duxPageTitle || "DUX & Bruno Mathsson"}
               </h2>
-              <p className="text-sm text-[#1C1917]/75 font-sans leading-relaxed">
-                {settings.beforeAfterDescription}
+              <p className="text-stone-300 font-sans text-base leading-relaxed">
+                {settings.duxPageSubtitle || "Vi klär om och restaurerar Bruno Mathssons och DUX mest älskade ikoner."}
               </p>
-              <div className="pt-2">
-                <Link
-                  href="/galleri"
-                  className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-[#5B4433] hover:text-[#1C1917] font-semibold border-b border-[#5B4433] pb-1 transition-colors"
-                >
-                  <span>Utforska hela före- & efterarkivet</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+              <ul className="space-y-2.5 pt-2">
+                {[
+                  "Dynsatser i Elmosoft & Tärnsjö anilinläder",
+                  "Byte av bärande väv (kanvas / linne)",
+                  "Knappdragning och fyllning efter originalspecifikation",
+                  "Individuell offert baserad på dina önskemål",
+                ].map((item) => (
+                  <li key={item} className="flex items-center gap-3 text-sm font-sans text-stone-200">
+                    <CheckCircle2 className="w-4 h-4 text-stone-400 shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <div className="pt-4">
+                <Link href="/begar-offert?typ=dux" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-stone-900 font-mono text-xs uppercase tracking-widest font-bold hover:bg-stone-100 transition-colors">
+                  Begär Offert för DUX / Mathsson <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
-
-            <div className="lg:col-span-7">
-              <div className="p-2 bg-[#F6F3ED] border border-[#DCD5C8] shadow-lg rounded-sm">
-                <BeforeAfterSlider
-                  beforeImage="/IMG_1236.png"
-                  afterImage="/IMG_0948.png"
-                  beforeLabel="Före (Slitet tyg)"
-                  afterLabel="Efter (Skandilock Fårskinn)"
-                />
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
 
-
-      {/* ═══════════════════════════════════════════════════════════════
-          6. REINSTATED SPLIT WORKSHOP BANNERS — "OMKLÄDSEL FÅTÖLJ & SOFFA"
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="w-full bg-[#1C1917] text-[#F6F3ED] divide-y divide-white/10">
-        
-        {/* Banner 1: OMKLÄDSEL FÅTÖLJ */}
-        <div className="relative min-h-[360px] sm:min-h-[420px] flex items-center overflow-hidden">
-          <Image
-            src={settings.fatoljBannerImage || "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=80"}
-            alt={settings.fatoljBannerTitle}
-            fill
-            className="object-cover object-center opacity-40 brightness-75 scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent" />
-
-          <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 py-12 w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-6">
-                <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-white font-normal uppercase tracking-wide">
-                  {settings.fatoljBannerTitle}
-                </h2>
+      {/* ════════════════════════════════════════════
+          5. TJÄNSTER — FÅTÖLJ & SOFFA
+      ════════════════════════════════════════════ */}
+      <section className="py-20 bg-white border-b border-stone-200">
+        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {[
+            { title: settings.fatoljBannerTitle, description: settings.fatoljBannerDescription, image: settings.fatoljBannerImage, cta: settings.fatoljBannerCta, href: "/begar-offert?typ=fatolj" },
+            { title: settings.soffaBannerTitle, description: settings.soffaBannerDescription, image: settings.soffaBannerImage, cta: settings.soffaBannerCta, href: "/begar-offert?typ=soffa" },
+          ].map((banner) => (
+            <Link key={banner.href} href={banner.href} className="group relative min-h-[360px] overflow-hidden bg-stone-900">
+              <Image src={banner.image || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1200&q=80"} alt={banner.title || "Tapetsering och renovering"} fill className="object-cover opacity-60 transition-transform duration-700 group-hover:scale-105" sizes="(max-width: 1024px) 100vw, 50vw" />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950/90 via-stone-950/30 to-transparent" />
+              <div className="relative z-10 flex min-h-[360px] flex-col justify-end p-8 text-white">
+                <h2 className="font-serif text-3xl sm:text-4xl">{banner.title || "Omklädsel och renovering"}</h2>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-white/80">{banner.description}</p>
+                <span className="mt-6 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest">{banner.cta || "Begär offert"} <ArrowRight className="w-4 h-4" /></span>
               </div>
-
-              <div className="lg:col-span-6 space-y-5">
-                <p className="text-sm sm:text-base text-white/85 font-sans leading-relaxed max-w-lg">
-                  {settings.fatoljBannerDescription}
-                </p>
-                <div>
-                  <Link
-                    href="/tjanster/offert?category=Fatolj"
-                    className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-white hover:text-[#DCD5C8] font-bold border-b-2 border-white pb-1 transition-all"
-                  >
-                    <span>{settings.fatoljBannerCta}</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Banner 2: OMKLÄDSEL SOFFA */}
-        <div className="relative min-h-[360px] sm:min-h-[420px] flex items-center overflow-hidden">
-          <Image
-            src={settings.soffaBannerImage || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1600&q=80"}
-            alt={settings.soffaBannerTitle}
-            fill
-            className="object-cover object-center opacity-40 brightness-75 scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/50 to-transparent" />
-
-          <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 py-12 w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-              <div className="lg:col-span-6">
-                <h2 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-white font-normal uppercase tracking-wide">
-                  {settings.soffaBannerTitle}
-                </h2>
-              </div>
-
-              <div className="lg:col-span-6 space-y-5">
-                <p className="text-sm sm:text-base text-white/85 font-sans leading-relaxed max-w-lg">
-                  {settings.soffaBannerDescription}
-                </p>
-                <div>
-                  <Link
-                    href="/tjanster/offert?category=Soffa"
-                    className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-white hover:text-[#DCD5C8] font-bold border-b-2 border-white pb-1 transition-all"
-                  >
-                    <span>{settings.soffaBannerCta}</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </section>
-
-
-      {/* ═══════════════════════════════════════════════════════════════
-          7. TRUST & REPUTATION STRIP
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="py-12 bg-[#F6F3ED] border-y border-[#DCD5C8]">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
-            {[
-              { icon: Clock, label: "10–14 arbetsdagar", sub: "Garanterad snabb ledtid" },
-              { icon: ShieldCheck, label: "5 års garanti", sub: "På hantverk & bärväv" },
-              { icon: Truck, label: "Eget Möbelbud", sub: "Hämtning i Storstockholm" },
-              { icon: Star, label: "4.9 / 5 i betyg", sub: "180+ nöjda möbelägare" },
-            ].map(({ icon: Icon, label, sub }) => (
-              <div key={label} className="space-y-1.5 p-3">
-                <Icon className="w-6 h-6 text-[#5B4433] mx-auto" />
-                <p className="font-serif text-base font-semibold text-[#1C1917]">{label}</p>
-                <p className="text-xs text-[#1C1917]/65 font-sans">{sub}</p>
-              </div>
-            ))}
-          </div>
+            </Link>
+          ))}
         </div>
       </section>
 
+      {/* ════════════════════════════════════════════
+          6. FÖRE & EFTER — Gallerihöjdpunkter
+      ════════════════════════════════════════════ */}
+      {featuredGallery.length > 0 && (
+        <section className="py-20 bg-white border-b border-stone-200">
+          <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mb-12">
+              <div>
+                <span className="font-mono text-xs uppercase tracking-widest text-stone-500">Hantverksresultat</span>
+                <h2 className="font-serif text-4xl sm:text-5xl text-stone-900 font-normal mt-1">Före & Efter</h2>
+              </div>
+              <Link href="/galleri" className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-wider text-stone-700 hover:text-stone-900 border-b border-stone-400 pb-0.5 transition-colors">
+                Se hela galleriet ({galleryItems.length} projekt) <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
 
-      {/* ═══════════════════════════════════════════════════════════════
-          8. CUSTOMER REVIEWS (LIVE SUPABASE FETCHED)
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="py-16 sm:py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 space-y-12">
-          
-          <div className="text-center space-y-2 max-w-xl mx-auto">
-            <span className="font-mono text-xs uppercase tracking-widest text-[#5B4433]">
-              Verifierade Omdömen
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl text-[#1C1917] font-normal">
-              Vad säger våra kunder?
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {reviews.slice(0, 3).map((review) => (
-              <div
-                key={review.id}
-                className="bg-[#FAFAF8] border border-[#DCD5C8] p-7 space-y-4 shadow-sm flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center gap-1 text-[#5B4433]">
-                    {[...Array(review.rating)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
-                    ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+              {featuredGallery.map((item) => (
+                <div key={item.id} className="space-y-4">
+                  <div className="border-4 border-stone-100 shadow-sm bg-stone-100">
+                    <BeforeAfterSlider beforeImage={item.beforeImage} afterImage={item.afterImage} />
                   </div>
-                  <p className="font-serif text-sm sm:text-base text-[#1C1917]/85 italic leading-relaxed">
-                    &ldquo;{review.text}&rdquo;
-                  </p>
-                </div>
-
-                <div className="pt-4 border-t border-[#DCD5C8] text-xs font-mono flex justify-between items-center">
                   <div>
-                    <span className="font-bold text-[#1C1917] block">{review.author}</span>
-                    <span className="text-[#5B4433]">{review.furnitureModel}</span>
+                    <h3 className="font-serif text-xl text-stone-900">{item.title}</h3>
+                    {item.description && (
+                      <p className="text-sm font-sans text-stone-600 mt-1">{item.description}</p>
+                    )}
                   </div>
-                  <span className="text-[#1C1917]/50">{review.location}</span>
                 </div>
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ═══════════════════════════════════════════════════════════════
-          9. B2B & ENTERPRISE BANNER
-      ═══════════════════════════════════════════════════════════════ */}
-      <section className="py-16 bg-[#1C1917] text-[#F6F3ED]">
-        <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-16 flex flex-col lg:flex-row items-center justify-between gap-8">
-          <div className="space-y-3 max-w-xl">
-            <div className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#DCD5C8]">
-              <Building2 className="w-4 h-4 text-[#DCD5C8]" />
-              <span>Företag, Kontor & Hotellmiljöer</span>
+              ))}
             </div>
-            <h3 className="font-serif text-3xl font-normal text-white">
-              {settings.b2bTitle}
-            </h3>
-            <p className="text-[#F6F3ED]/75 text-sm font-sans leading-relaxed">
-              {settings.b2bDescription}
-            </p>
           </div>
+        </section>
+      )}
 
-          <Link
-            href="/tjanster/offert?b2b=true"
-            className="whitespace-nowrap px-8 py-4 bg-[#F6F3ED] text-[#1C1917] font-mono text-xs uppercase tracking-wider font-bold hover:bg-white transition-colors flex items-center gap-2 shadow-lg rounded-none"
-          >
-            <span>Begär Företagsoffert</span>
-            <ArrowRight className="w-4 h-4 text-[#5B4433]" />
-          </Link>
+
+      {/* ════════════════════════════════════════════
+          7. KONTAKT & BEGÄR OFFERT (Avslutande CTA)
+      ════════════════════════════════════════════ */}
+      <section className="py-24 bg-stone-950 text-white text-center">
+        <div className="max-w-2xl mx-auto px-6 space-y-6">
+          <span className="font-mono text-xs uppercase tracking-widest text-stone-400">Kostnadsfri Offert</span>
+          <h2 className="font-serif text-4xl sm:text-5xl font-normal">
+            Har du en möbel som behöver renoveras?
+          </h2>
+          <p className="text-stone-300 font-sans text-base leading-relaxed">
+            Skicka oss bilder och en kort beskrivning av din möbel — vi återkommer med ett personligt prisförslag inom 24 timmar.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 pt-4">
+            <Link href="/begar-offert" className="inline-flex items-center gap-2 px-10 py-5 bg-white text-stone-900 font-mono text-sm uppercase tracking-widest font-bold hover:bg-stone-100 transition-colors">
+              Begär Offert <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link href="/kontakt" className="inline-flex items-center gap-2 px-8 py-5 border border-white/30 text-white font-mono text-sm uppercase tracking-widest hover:bg-white/10 transition-colors">
+              Kontakta Verkstaden
+            </Link>
+          </div>
         </div>
       </section>
 

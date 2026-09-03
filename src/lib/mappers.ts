@@ -1,6 +1,6 @@
-import { Product, Order, QuoteRequest, WorkshopService, DeliveryZone, Review, SiteSettings } from "@/types";
+import { Product, Order, QuoteRequest, SiteSettings, Material, GalleryItem, FurnitureCategory, ProductCollection, StockStatus, OrderType, OrderStatus, QuoteStatus } from "@/types";
 
-// ─── Bidirectional Mappers (Pure TypeScript, Safe for Client & Server) ──────────────────────
+// ── Products (Butik) ──────────────────────────────────────────────────────────
 
 export function mapProductFromDb(row: Record<string, unknown>): Product {
   return {
@@ -9,22 +9,23 @@ export function mapProductFromDb(row: Record<string, unknown>): Product {
     name: String(row.name || ""),
     designer: String(row.designer || ""),
     model: String(row.model || ""),
-    category: row.category as Product["category"],
+    category: (row.category as FurnitureCategory) || "Fatolj",
+    collection: (row.collection as ProductCollection) || "none",
     categoryNameSwedish: String(row.category_name_swedish || ""),
     basePrice: Number(row.base_price || 0),
     description: String(row.description || ""),
     historicalContext: row.historical_context ? String(row.historical_context) : undefined,
     dimensions: row.dimensions ? String(row.dimensions) : undefined,
-    conditionGrade: row.condition_grade as Product["conditionGrade"],
+    conditionGrade: row.condition_grade ? (row.condition_grade as import("@/types").ConditionGrade) : undefined,
     provenanceCrestText: row.provenance_crest_text ? String(row.provenance_crest_text) : undefined,
-    stockStatus: (row.stock_status || "i_lager") as Product["stockStatus"],
-    primaryImage: String(row.primary_image || "/IMG_0948.png"),
+    stockStatus: (row.stock_status as StockStatus) || "i_lager",
+    primaryImage: String(row.primary_image || ""),
     galleryImages: Array.isArray(row.gallery_images) ? (row.gallery_images as string[]) : [],
+    materialIds: Array.isArray(row.material_ids) ? (row.material_ids as string[]) : [],
     beforeImage: row.before_image ? String(row.before_image) : undefined,
     afterImage: row.after_image ? String(row.after_image) : undefined,
     featured: Boolean(row.featured),
-    variants: Array.isArray(row.variants) ? (row.variants as Product["variants"]) : [],
-    createdAt: String(row.created_at || ""),
+    createdAt: String(row.created_at || new Date().toISOString()),
   };
 }
 
@@ -36,6 +37,7 @@ export function mapProductToDb(p: Partial<Product>): Record<string, unknown> {
   if (p.designer !== undefined) row.designer = p.designer;
   if (p.model !== undefined) row.model = p.model;
   if (p.category !== undefined) row.category = p.category;
+  if (p.collection !== undefined) row.collection = p.collection;
   if (p.categoryNameSwedish !== undefined) row.category_name_swedish = p.categoryNameSwedish;
   if (p.basePrice !== undefined) row.base_price = p.basePrice;
   if (p.description !== undefined) row.description = p.description;
@@ -46,40 +48,38 @@ export function mapProductToDb(p: Partial<Product>): Record<string, unknown> {
   if (p.stockStatus !== undefined) row.stock_status = p.stockStatus;
   if (p.primaryImage !== undefined) row.primary_image = p.primaryImage;
   if (p.galleryImages !== undefined) row.gallery_images = p.galleryImages;
+  if (p.materialIds !== undefined) row.material_ids = p.materialIds;
   if (p.beforeImage !== undefined) row.before_image = p.beforeImage;
   if (p.afterImage !== undefined) row.after_image = p.afterImage;
   if (p.featured !== undefined) row.featured = p.featured;
-  if (p.variants !== undefined) row.variants = p.variants;
   return row;
 }
+
+// ── Orders ────────────────────────────────────────────────────────────────────
 
 export function mapOrderFromDb(row: Record<string, unknown>): Order {
   return {
     id: String(row.id || ""),
     orderNumber: String(row.order_number || ""),
-    orderType: (row.order_type as Order["orderType"]) || "product",
+    orderType: (row.order_type as OrderType) || "product",
     customerName: String(row.customer_name || ""),
     customerEmail: String(row.customer_email || ""),
     customerPhone: String(row.customer_phone || ""),
     customerAddress: String(row.customer_address || ""),
     customerPostalCode: String(row.customer_postal_code || ""),
     customerCity: String(row.customer_city || ""),
-    deliveryZoneId: String(row.delivery_zone_id || "zone-stockholm-innerstad"),
-    deliveryZoneName: String(row.delivery_zone_name || "Stockholm Innerstad"),
-    deliveryFee: Number(row.delivery_fee || 0),
     subtotal: Number(row.subtotal || 0),
     taxAmount: Number(row.tax_amount || 0),
     totalAmount: Number(row.total_amount || 0),
-    paymentMethod: (row.payment_method as Order["paymentMethod"]) || "klarna",
-    paymentStatus: (row.payment_status as Order["paymentStatus"]) || "betald",
-    status: (row.status as Order["status"]) || "mottagen",
-    items: Array.isArray(row.items) ? (row.items as Order["items"]) : [],
-    trackingEvents: Array.isArray(row.tracking_events) ? (row.tracking_events as Order["trackingEvents"]) : [],
+    paymentMethod: (row.payment_method as "klarna" | "swish" | "kort") || "kort",
+    paymentStatus: (row.payment_status as "betald" | "vantar_pa_betalning" | "delbetalning") || "vantar_pa_betalning",
+    status: (row.status as OrderStatus) || "mottagen",
+    items: Array.isArray(row.items) ? (row.items as import("@/types").OrderItem[]) : [],
     estimatedCompletionDate: row.estimated_completion_date ? String(row.estimated_completion_date) : undefined,
     workshopNotes: row.workshop_notes ? String(row.workshop_notes) : undefined,
     assignedUpholsterer: row.assigned_upholsterer ? String(row.assigned_upholsterer) : undefined,
-    createdAt: String(row.created_at || ""),
-    updatedAt: String(row.updated_at || ""),
+    createdAt: String(row.created_at || new Date().toISOString()),
+    updatedAt: String(row.updated_at || new Date().toISOString()),
   };
 }
 
@@ -94,9 +94,6 @@ export function mapOrderToDb(o: Partial<Order>): Record<string, unknown> {
   if (o.customerAddress !== undefined) row.customer_address = o.customerAddress;
   if (o.customerPostalCode !== undefined) row.customer_postal_code = o.customerPostalCode;
   if (o.customerCity !== undefined) row.customer_city = o.customerCity;
-  if (o.deliveryZoneId !== undefined) row.delivery_zone_id = o.deliveryZoneId;
-  if (o.deliveryZoneName !== undefined) row.delivery_zone_name = o.deliveryZoneName;
-  if (o.deliveryFee !== undefined) row.delivery_fee = o.deliveryFee;
   if (o.subtotal !== undefined) row.subtotal = o.subtotal;
   if (o.taxAmount !== undefined) row.tax_amount = o.taxAmount;
   if (o.totalAmount !== undefined) row.total_amount = o.totalAmount;
@@ -104,21 +101,18 @@ export function mapOrderToDb(o: Partial<Order>): Record<string, unknown> {
   if (o.paymentStatus !== undefined) row.payment_status = o.paymentStatus;
   if (o.status !== undefined) row.status = o.status;
   if (o.items !== undefined) row.items = o.items;
-  if (o.trackingEvents !== undefined) row.tracking_events = o.trackingEvents;
   if (o.estimatedCompletionDate !== undefined) row.estimated_completion_date = o.estimatedCompletionDate;
   if (o.workshopNotes !== undefined) row.workshop_notes = o.workshopNotes;
   if (o.assignedUpholsterer !== undefined) row.assigned_upholsterer = o.assignedUpholsterer;
-  if (o.updatedAt !== undefined) row.updated_at = o.updatedAt;
   return row;
 }
+
+// ── Quotes ────────────────────────────────────────────────────────────────────
 
 export function mapQuoteFromDb(row: Record<string, unknown>): QuoteRequest {
   return {
     id: String(row.id || ""),
     quoteNumber: String(row.quote_number || ""),
-    isB2B: Boolean(row.is_b2b),
-    companyName: row.company_name ? String(row.company_name) : undefined,
-    orgNumber: row.org_number ? String(row.org_number) : undefined,
     contactName: String(row.contact_name || ""),
     email: String(row.email || ""),
     phone: String(row.phone || ""),
@@ -130,10 +124,10 @@ export function mapQuoteFromDb(row: Record<string, unknown>): QuoteRequest {
     currentConditionDescription: String(row.current_condition_description || ""),
     dimensions: row.dimensions ? String(row.dimensions) : undefined,
     images: Array.isArray(row.images) ? (row.images as string[]) : [],
-    status: (row.status || "ny") as QuoteRequest["status"],
+    status: (row.status as QuoteStatus) || "ny",
     quotedPrice: row.quoted_price ? Number(row.quoted_price) : undefined,
     notes: row.notes ? String(row.notes) : undefined,
-    createdAt: String(row.created_at || ""),
+    createdAt: String(row.created_at || new Date().toISOString()),
   };
 }
 
@@ -141,9 +135,6 @@ export function mapQuoteToDb(q: Partial<QuoteRequest>): Record<string, unknown> 
   const row: Record<string, unknown> = {};
   if (q.id !== undefined) row.id = q.id;
   if (q.quoteNumber !== undefined) row.quote_number = q.quoteNumber;
-  if (q.isB2B !== undefined) row.is_b2b = q.isB2B;
-  if (q.companyName !== undefined) row.company_name = q.companyName;
-  if (q.orgNumber !== undefined) row.org_number = q.orgNumber;
   if (q.contactName !== undefined) row.contact_name = q.contactName;
   if (q.email !== undefined) row.email = q.email;
   if (q.phone !== undefined) row.phone = q.phone;
@@ -161,130 +152,109 @@ export function mapQuoteToDb(q: Partial<QuoteRequest>): Record<string, unknown> 
   return row;
 }
 
-export function mapServiceFromDb(row: Record<string, unknown>): WorkshopService {
-  return {
-    id: String(row.id || ""),
-    slug: String(row.slug || ""),
-    name: String(row.name || ""),
-    shortDescription: String(row.short_description || ""),
-    fullDescription: String(row.full_description || row.short_description || ""),
-    furnitureType: (row.furniture_type as WorkshopService["furnitureType"]) || "Fatolj",
-    applicableModels: Array.isArray(row.applicable_models) ? (row.applicable_models as string[]) : [String(row.name || "")],
-    isFixedPrice: Boolean(row.is_fixed_price),
-    priceRangeText: String(row.price_range_text || ""),
-    basePrice: Number(row.base_price || 0),
-    turnaroundDays: Number(row.turnaround_days || 10),
-    turnaroundText: String(row.turnaround_text || ""),
-    primaryImage: String(row.primary_image || "/IMG_0948.png"),
-    beforeAfterPair: row.before_after_pair as WorkshopService["beforeAfterPair"],
-    materials: Array.isArray(row.materials) ? (row.materials as WorkshopService["materials"]) : [],
-    addons: Array.isArray(row.addons) ? (row.addons as WorkshopService["addons"]) : [],
-    featured: Boolean(row.featured),
-  };
-}
+// ── Materials ─────────────────────────────────────────────────────────────────
 
-export function mapServiceToDb(s: Partial<WorkshopService>): Record<string, unknown> {
-  const row: Record<string, unknown> = {};
-  if (s.id !== undefined) row.id = s.id;
-  if (s.slug !== undefined) row.slug = s.slug;
-  if (s.name !== undefined) row.name = s.name;
-  if (s.shortDescription !== undefined) row.short_description = s.shortDescription;
-  if (s.fullDescription !== undefined) row.full_description = s.fullDescription;
-  if (s.furnitureType !== undefined) row.furniture_type = s.furnitureType;
-  if (s.applicableModels !== undefined) row.applicable_models = s.applicableModels;
-  if (s.isFixedPrice !== undefined) row.is_fixed_price = s.isFixedPrice;
-  if (s.priceRangeText !== undefined) row.price_range_text = s.priceRangeText;
-  if (s.basePrice !== undefined) row.base_price = s.basePrice;
-  if (s.turnaroundDays !== undefined) row.turnaround_days = s.turnaroundDays;
-  if (s.turnaroundText !== undefined) row.turnaround_text = s.turnaroundText;
-  if (s.primaryImage !== undefined) row.primary_image = s.primaryImage;
-  if (s.beforeAfterPair !== undefined) row.before_after_pair = s.beforeAfterPair;
-  if (s.materials !== undefined) row.materials = s.materials;
-  if (s.addons !== undefined) row.addons = s.addons;
-  if (s.featured !== undefined) row.featured = s.featured;
-  return row;
-}
-
-export function mapZoneFromDb(row: Record<string, unknown>): DeliveryZone {
+export function mapMaterialFromDb(row: Record<string, unknown>): Material {
   return {
     id: String(row.id || ""),
     name: String(row.name || ""),
-    description: String(row.description || ""),
-    corridorDescription: String(row.corridor_description || ""),
-    surcharge: Number(row.surcharge || 0),
-    estimatedDeliveryDays: String(row.estimated_delivery_days || ""),
-    active: Boolean(row.active),
+    materialType: String(row.material_type || ""),
+    colorHex: row.color_hex ? String(row.color_hex) : undefined,
+    imageUrl: String(row.image_url || ""),
+    price: Number(row.price || 0),
+    supplier: row.supplier ? String(row.supplier) : undefined,
+    description: row.description ? String(row.description) : undefined,
+    sortOrder: Number(row.sort_order || 0),
+    active: Boolean(row.active !== false), // default true
+    createdAt: String(row.created_at || new Date().toISOString()),
   };
 }
 
-export function mapZoneToDb(z: Partial<DeliveryZone>): Record<string, unknown> {
+export function mapMaterialToDb(m: Partial<Material>): Record<string, unknown> {
   const row: Record<string, unknown> = {};
-  if (z.id !== undefined) row.id = z.id;
-  if (z.name !== undefined) row.name = z.name;
-  if (z.description !== undefined) row.description = z.description;
-  if (z.corridorDescription !== undefined) row.corridor_description = z.corridorDescription;
-  if (z.surcharge !== undefined) row.surcharge = z.surcharge;
-  if (z.estimatedDeliveryDays !== undefined) row.estimated_delivery_days = z.estimatedDeliveryDays;
-  if (z.active !== undefined) row.active = z.active;
+  if (m.id !== undefined) row.id = m.id;
+  if (m.name !== undefined) row.name = m.name;
+  if (m.materialType !== undefined) row.material_type = m.materialType;
+  if (m.colorHex !== undefined) row.color_hex = m.colorHex;
+  if (m.imageUrl !== undefined) row.image_url = m.imageUrl;
+  if (m.price !== undefined) row.price = m.price;
+  if (m.supplier !== undefined) row.supplier = m.supplier;
+  if (m.description !== undefined) row.description = m.description;
+  if (m.sortOrder !== undefined) row.sort_order = m.sortOrder;
+  if (m.active !== undefined) row.active = m.active;
   return row;
 }
 
-export function mapReviewFromDb(row: Record<string, unknown>): Review {
+// ── Gallery Items ─────────────────────────────────────────────────────────────
+
+export function mapGalleryItemFromDb(row: Record<string, unknown>): GalleryItem {
   return {
     id: String(row.id || ""),
-    author: String(row.author || ""),
-    location: String(row.location || ""),
-    furnitureModel: String(row.furniture_model || ""),
-    rating: Number(row.rating || 5),
-    text: String(row.text || ""),
-    date: String(row.date || ""),
-    verifiedPurchase: Boolean(row.verified_purchase),
+    title: String(row.title || ""),
+    description: row.description ? String(row.description) : undefined,
+    beforeImage: String(row.before_image || ""),
+    afterImage: String(row.after_image || ""),
+    sortOrder: Number(row.sort_order || 0),
+    createdAt: String(row.created_at || new Date().toISOString()),
   };
 }
 
-export function mapReviewToDb(r: Partial<Review>): Record<string, unknown> {
+export function mapGalleryItemToDb(g: Partial<GalleryItem>): Record<string, unknown> {
   const row: Record<string, unknown> = {};
-  if (r.id !== undefined) row.id = r.id;
-  if (r.author !== undefined) row.author = r.author;
-  if (r.location !== undefined) row.location = r.location;
-  if (r.furnitureModel !== undefined) row.furniture_model = r.furnitureModel;
-  if (r.rating !== undefined) row.rating = r.rating;
-  if (r.text !== undefined) row.text = r.text;
-  if (r.date !== undefined) row.date = r.date;
-  if (r.verifiedPurchase !== undefined) row.verified_purchase = r.verifiedPurchase;
+  if (g.id !== undefined) row.id = g.id;
+  if (g.title !== undefined) row.title = g.title;
+  if (g.description !== undefined) row.description = g.description;
+  if (g.beforeImage !== undefined) row.before_image = g.beforeImage;
+  if (g.afterImage !== undefined) row.after_image = g.afterImage;
+  if (g.sortOrder !== undefined) row.sort_order = g.sortOrder;
   return row;
 }
+
+// ── Site Settings ─────────────────────────────────────────────────────────────
 
 export function mapSettingsFromDb(row: Record<string, unknown>): SiteSettings {
   return {
     id: String(row.id || "main"),
-    companyName: String(row.company_name || "Skandiva Tapetserarverkstad AB"),
-    orgNumber: String(row.org_number || "559281-3942"),
-    phone: String(row.phone || "08-640 22 90"),
-    email: String(row.email || "kontakt@skandiva.se"),
-    address: String(row.address || "Åsögatan 142, 116 24 Södermalm, Stockholm"),
-    openingHours: String(row.opening_hours || "Mån–Fre: 08:30 – 17:00 • Lör: Enligt tidsbokning"),
-    whatsappNumber: String(row.whatsapp_number || "+4686402290"),
-    heroHeadline: String(row.hero_headline || "Ge nytt liv åt svenska designklassiker."),
+    companyName: String(row.company_name || ""),
+    orgNumber: String(row.org_number || ""),
+    phone: String(row.phone || ""),
+    email: String(row.email || ""),
+    address: String(row.address || ""),
+    openingHours: String(row.opening_hours || ""),
+    whatsappNumber: String(row.whatsapp_number || ""),
+    taxEnabled: row.tax_enabled !== false,
+    taxRate: Number(row.tax_rate ?? 0.20),
+    heroHeadline: String(row.hero_headline || "Vi räddar klassiker. Vi skapar arv."),
     heroSubtitle: String(row.hero_subtitle || ""),
-    heroBadge: String(row.hero_badge || "Stockholms Mästare i Möbelrestaurering sedan 2018"),
-    heroImage: String(row.hero_image || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=2200&q=85"),
-    laminoTitle: String(row.lamino_title || "LAMINO — OMKLÄDSEL MEST ÄLSKADE FÅTÖLJ"),
+    heroBadge: String(row.hero_badge || "Tapetserarverkstad • Södermalm"),
+    heroImage: String(row.hero_image || ""),
+    laminoTitle: String(row.lamino_title || "Lamino Omklädsel"),
     laminoDescription: String(row.lamino_description || ""),
-    laminoPrice: Number(row.lamino_price || 4900),
-    laminoImage: String(row.lamino_image || "/IMG_0948.png"),
-    beforeAfterTitle: String(row.before_after_title || "Se förvandlingen från sliten klassiker till nyskick."),
+    laminoPrice: Number(row.lamino_price || 0),
+    laminoImage: String(row.lamino_image || ""),
+    laminoPageTitle: String(row.lamino_page_title || "Lamino Omklädsel i Fårskinn"),
+    laminoPageSubtitle: String(row.lamino_page_subtitle || "Yngve Ekströms mästerverk förtjänar ett långt liv."),
+    laminoPageImage: String(row.lamino_page_image || ""),
+    laminoProcessTitle: String(row.lamino_process_title || "Så renoverar vi din Lamino"),
+    laminoProcessDescription: String(row.lamino_process_description || "Vi arbetar varsamt, med respekt för originalkonstruktionen och materialens livslängd."),
+    duxPageTitle: String(row.dux_page_title || "DUX & Bruno Mathsson Omklädsel"),
+    duxPageSubtitle: String(row.dux_page_subtitle || "Specialistverkstad för omklädsel och dynsatser i premiumläder."),
+    duxPageImage: String(row.dux_page_image || ""),
+    duxServicesTitle: String(row.dux_services_title || "Specialanpassad renovering efter originalmått"),
+    duxServicesDescription: String(row.dux_services_description || "Vi bevarar konstruktionens originalkänsla med material och arbete anpassat efter varje möbel."),
+    beforeAfterTitle: String(row.before_after_title || "Före & Efter"),
     beforeAfterDescription: String(row.before_after_description || ""),
-    fatoljBannerTitle: String(row.fatolj_banner_title || "OMKLÄDSEL FÅTÖLJ"),
+    fatoljBannerTitle: String(row.fatolj_banner_title || ""),
     fatoljBannerDescription: String(row.fatolj_banner_description || ""),
-    fatoljBannerImage: String(row.fatolj_banner_image || "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1600&q=80"),
-    fatoljBannerCta: String(row.fatolj_banner_cta || "BEGÄR OFFERT FÖR FÅTÖLJ"),
-    soffaBannerTitle: String(row.soffa_banner_title || "OMKLÄDSEL SOFFA"),
+    fatoljBannerImage: String(row.fatolj_banner_image || ""),
+    fatoljBannerCta: String(row.fatolj_banner_cta || ""),
+    soffaBannerTitle: String(row.soffa_banner_title || ""),
     soffaBannerDescription: String(row.soffa_banner_description || ""),
-    soffaBannerImage: String(row.soffa_banner_image || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=1600&q=80"),
-    soffaBannerCta: String(row.soffa_banner_cta || "BEGÄR OFFERT FÖR SOFFA"),
-    b2bTitle: String(row.b2b_title || "Ska ni renovera 5+ möbler för ert kontor?"),
-    b2bDescription: String(row.b2b_description || ""),
+    soffaBannerImage: String(row.soffa_banner_image || ""),
+    soffaBannerCta: String(row.soffa_banner_cta || ""),
+    aboutTitle: String(row.about_title || "Om Skandiva Tapetserarverkstad"),
+    aboutDescription: String(row.about_description || ""),
+    aboutImage: String(row.about_image || ""),
     updatedAt: String(row.updated_at || new Date().toISOString()),
   };
 }
@@ -299,6 +269,8 @@ export function mapSettingsToDb(s: Partial<SiteSettings>): Record<string, unknow
   if (s.address !== undefined) row.address = s.address;
   if (s.openingHours !== undefined) row.opening_hours = s.openingHours;
   if (s.whatsappNumber !== undefined) row.whatsapp_number = s.whatsappNumber;
+  if (s.taxEnabled !== undefined) row.tax_enabled = s.taxEnabled;
+  if (s.taxRate !== undefined) row.tax_rate = s.taxRate;
   if (s.heroHeadline !== undefined) row.hero_headline = s.heroHeadline;
   if (s.heroSubtitle !== undefined) row.hero_subtitle = s.heroSubtitle;
   if (s.heroBadge !== undefined) row.hero_badge = s.heroBadge;
@@ -307,6 +279,16 @@ export function mapSettingsToDb(s: Partial<SiteSettings>): Record<string, unknow
   if (s.laminoDescription !== undefined) row.lamino_description = s.laminoDescription;
   if (s.laminoPrice !== undefined) row.lamino_price = s.laminoPrice;
   if (s.laminoImage !== undefined) row.lamino_image = s.laminoImage;
+  if (s.laminoPageTitle !== undefined) row.lamino_page_title = s.laminoPageTitle;
+  if (s.laminoPageSubtitle !== undefined) row.lamino_page_subtitle = s.laminoPageSubtitle;
+  if (s.laminoPageImage !== undefined) row.lamino_page_image = s.laminoPageImage;
+  if (s.laminoProcessTitle !== undefined) row.lamino_process_title = s.laminoProcessTitle;
+  if (s.laminoProcessDescription !== undefined) row.lamino_process_description = s.laminoProcessDescription;
+  if (s.duxPageTitle !== undefined) row.dux_page_title = s.duxPageTitle;
+  if (s.duxPageSubtitle !== undefined) row.dux_page_subtitle = s.duxPageSubtitle;
+  if (s.duxPageImage !== undefined) row.dux_page_image = s.duxPageImage;
+  if (s.duxServicesTitle !== undefined) row.dux_services_title = s.duxServicesTitle;
+  if (s.duxServicesDescription !== undefined) row.dux_services_description = s.duxServicesDescription;
   if (s.beforeAfterTitle !== undefined) row.before_after_title = s.beforeAfterTitle;
   if (s.beforeAfterDescription !== undefined) row.before_after_description = s.beforeAfterDescription;
   if (s.fatoljBannerTitle !== undefined) row.fatolj_banner_title = s.fatoljBannerTitle;
@@ -317,8 +299,9 @@ export function mapSettingsToDb(s: Partial<SiteSettings>): Record<string, unknow
   if (s.soffaBannerDescription !== undefined) row.soffa_banner_description = s.soffaBannerDescription;
   if (s.soffaBannerImage !== undefined) row.soffa_banner_image = s.soffaBannerImage;
   if (s.soffaBannerCta !== undefined) row.soffa_banner_cta = s.soffaBannerCta;
-  if (s.b2bTitle !== undefined) row.b2b_title = s.b2bTitle;
-  if (s.b2bDescription !== undefined) row.b2b_description = s.b2bDescription;
+  if (s.aboutTitle !== undefined) row.about_title = s.aboutTitle;
+  if (s.aboutDescription !== undefined) row.about_description = s.aboutDescription;
+  if (s.aboutImage !== undefined) row.about_image = s.aboutImage;
   if (s.updatedAt !== undefined) row.updated_at = s.updatedAt;
   return row;
 }

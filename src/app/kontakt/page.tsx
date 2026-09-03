@@ -2,7 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { CrestSeal } from "@/components/ui/CrestSeal";
 import { ContactForm } from "@/components/contact/ContactForm";
-import { serverDb } from "@/lib/supabaseServer";
+import { serverDb } from "@/lib/db";
 import { MapPin, Phone, Mail, Clock, MessageSquare } from "lucide-react";
 
 export const revalidate = 60; // ISR every 60s

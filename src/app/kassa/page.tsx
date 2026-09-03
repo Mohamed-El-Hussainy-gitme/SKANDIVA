@@ -4,7 +4,8 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { useCart, formatSEK } from "@/lib/store";
+import { formatSEK } from "@/lib/utils";
+import { useCart } from "@/lib/store";
 import { 
   ShieldCheck, 
   CreditCard, 
@@ -16,7 +17,7 @@ import {
 
 export default function KassaPage() {
   const router = useRouter();
-  const { items, subtotal, deliveryFee, taxAmount, totalAmount, selectedZone, clearCart } = useCart();
+  const { items, subtotal, taxAmount, totalAmount, taxEnabled, taxRate, clearCart } = useCart();
 
   const [customerName, setCustomerName] = useState("");
   const [customerEmail, setCustomerEmail] = useState("");
@@ -46,8 +47,6 @@ export default function KassaPage() {
           customerAddress,
           customerPostalCode,
           customerCity,
-          deliveryZoneId: selectedZone.id,
-          deliveryZoneName: selectedZone.name,
           paymentMethod,
           items,
           workshopNotes,
@@ -323,9 +322,6 @@ export default function KassaPage() {
                   </div>
                   <div className="flex-1 space-y-0.5">
                     <h4 className="font-serif font-medium text-ink">{item.title}</h4>
-                    {item.selectedVariantName && (
-                      <p className="text-[11px] text-ink/70">{item.selectedVariantName}</p>
-                    )}
                     {item.selectedMaterial && (
                       <p className="text-[11px] text-ink/70">{item.selectedMaterial}</p>
                     )}
@@ -343,12 +339,8 @@ export default function KassaPage() {
                 <span>Delsumma artiklar</span>
                 <span>{formatSEK(subtotal)}</span>
               </div>
-              <div className="flex justify-between text-ink/80">
-                <span>Leverans ({selectedZone.name})</span>
-                <span>{selectedZone.surcharge === 0 ? "0 kr" : formatSEK(deliveryFee)}</span>
-              </div>
               <div className="flex justify-between text-ink/60 border-t border-stone/40 pt-1.5">
-                <span>Moms (25% ingår)</span>
+                <span>{taxEnabled ? `Moms (${Math.round((taxRate || 0) * 100)}% ingår)` : "Moms"}</span>
                 <span>{formatSEK(taxAmount)}</span>
               </div>
               <div className="flex justify-between text-xl font-serif font-bold text-ink border-t border-stone pt-3">

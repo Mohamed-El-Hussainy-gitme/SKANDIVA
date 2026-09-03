@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
-import { supabaseAdmin } from "@/lib/supabaseServer";
+import { supabase } from "@/lib/db/config";
+import { supabaseAdmin } from "@/lib/db";
 import { createAdminToken, ADMIN_COOKIE_NAME } from "@/lib/auth";
 import { logger } from "@/lib/logger";
 
