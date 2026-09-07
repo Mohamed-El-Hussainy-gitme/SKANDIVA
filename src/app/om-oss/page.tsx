@@ -7,7 +7,7 @@ import { serverDb } from "@/lib/db";
 export const revalidate = 60;
 
 export const metadata = {
-  title: "Om Oss — Skandiva Tapetserarverkstad Stockholm | Södermalm",
+  title: "Om Oss — Skandiva Tapetserarverkstad Stockholm | Danderyd",
   description: "Lär känna Skandiva Tapetserarverkstad på Åsögatan. Vår filosofi, hantverkstradition och passion för skandinaviska designklassiker.",
 };
 
@@ -15,7 +15,7 @@ export default async function OmOssPage() {
   const settings = await serverDb.getSettings();
 
   const title = settings.aboutTitle || "Traditionellt tapetserarhantverk sedan 2018";
-  const description = settings.aboutDescription || "Skandiva grundades på Åsögatan på Södermalm i Stockholm med en passionerad vision: att bevara, rädda och förädla Skandinaviens mest älskade designmöbler med kompromisslöst hantverk.";
+  const description = settings.aboutDescription || "Skandiva grundades på Åsögatan på Danderyd i Stockholm med en passionerad vision: att bevara, rädda och förädla Skandinaviens mest älskade designmöbler med kompromisslöst hantverk.";
   const mainImage = settings.aboutImage || "/artilleriet-store-4.jpg";
 
   return (
@@ -92,7 +92,7 @@ export default async function OmOssPage() {
             Bakom Kulisserna
           </span>
           <h3 className="font-serif text-3xl text-stone-900 font-normal">
-            Från vår ateljé på Södermalm
+            Från vår ateljé på Danderyd
           </h3>
         </div>
 
@@ -163,7 +163,7 @@ export default async function OmOssPage() {
           <ShieldCheck className="w-8 h-8 text-stone-800" />
           <h3 className="font-serif text-xl text-stone-900 font-medium">5 Års Full Garanti</h3>
           <p className="text-xs text-stone-600 font-sans leading-relaxed">
-            Vi står till 100% bakom varje söm, bärväv och stomjustering vi utför i vår verkstad på Södermalm.
+            Vi står till 100% bakom varje söm, bärväv och stomjustering vi utför i vår verkstad på Danderyd.
           </p>
         </div>
       </div>

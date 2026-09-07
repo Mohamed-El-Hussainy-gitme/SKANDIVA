@@ -65,7 +65,7 @@ function LoginForm() {
 
           <div className="space-y-1">
             <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#DCD5C8]/70 block">
-              Skandiva Ateljé • Södermalm
+              Skandiva Ateljé • Danderyd
             </span>
             <h1 className="font-serif text-3xl font-normal text-white">
               Verkstadsportal

@@ -2,9 +2,9 @@
 import { formatSEK } from "@/lib/utils";
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Product, Material } from "@/types";
-import { useCart } from "@/lib/store";
-import { ShoppingBag, Check, ShieldCheck, Truck, Clock } from "lucide-react";
+import { ShieldCheck, Truck, Clock, ArrowRight } from "lucide-react";
 
 interface ProductDetailInteractiveProps {
   product: Product;
@@ -12,36 +12,10 @@ interface ProductDetailInteractiveProps {
 }
 
 export const ProductDetailInteractive: React.FC<ProductDetailInteractiveProps> = ({ product, materials = [] }) => {
-  const { addItem, setIsDrawerOpen } = useCart();
   const [selectedMaterial, setSelectedMaterial] = useState<Material | undefined>();
-  const [quantity, setQuantity] = useState(1);
-  const [added, setAdded] = useState(false);
 
   const currentPrice = product.basePrice + (selectedMaterial?.price || 0);
   const isSold = product.stockStatus === "sald";
-
-  const handleAddToCart = () => {
-    if (isSold) return;
-
-    addItem({
-      id: `item-${product.id}-${selectedMaterial ? selectedMaterial.id : "default"}`,
-      type: "product",
-      referenceId: product.id,
-      title: product.name,
-      designerOrModel: `${product.designer} • ${product.model}`,
-      selectedMaterial: selectedMaterial?.name,
-      quantity,
-      unitPrice: currentPrice,
-      totalPrice: currentPrice * quantity,
-      image: product.primaryImage,
-    });
-
-    setAdded(true);
-    setTimeout(() => {
-      setAdded(false);
-      setIsDrawerOpen(true);
-    }, 400);
-  };
 
   return (
     <div className="space-y-6">
@@ -50,7 +24,7 @@ export const ProductDetailInteractive: React.FC<ProductDetailInteractiveProps> =
         <span className="font-serif text-3xl sm:text-4xl text-ink font-bold">
           {formatSEK(currentPrice)}
         </span>
-        <span className="text-xs font-mono text-ink/60">{product.materialIds.length > 0 ? "Material väljs nedan" : "Pris enligt vald produkt"}</span>
+        <span className="text-xs font-mono text-ink/60">{materials.length > 0 ? "Material väljs nedan" : "Fast pris"}</span>
       </div>
 
       {/* Material Selector */}
@@ -65,7 +39,11 @@ export const ProductDetailInteractive: React.FC<ProductDetailInteractiveProps> =
               aria-label="Välj utförande"
             >
               <option value="">Välj ett material</option>
-              {materials.map((material) => <option key={material.id} value={material.id}>{material.name}{material.price > 0 ? ` — +${formatSEK(material.price)}` : ""}</option>)}
+              {materials.map((material) => (
+                <option key={material.id} value={material.id}>
+                  {material.name}{material.price > 0 ? ` — +${formatSEK(material.price)}` : ""}
+                </option>
+              ))}
             </select>
             {materials.map((material) => {
               const isSelected = selectedMaterial?.id === material.id;
@@ -74,7 +52,7 @@ export const ProductDetailInteractive: React.FC<ProductDetailInteractiveProps> =
                   key={material.id}
                   type="button"
                   onClick={() => setSelectedMaterial(material)}
-                    className={`w-full text-left p-3 border transition-all flex items-center justify-between ${
+                  className={`w-full text-left p-3 border transition-all flex items-center justify-between ${
                     isSelected
                       ? "border-wood ring-2 ring-wood bg-stone-light/40"
                       : "border-stone hover:border-stone-dark bg-white"
@@ -101,48 +79,33 @@ export const ProductDetailInteractive: React.FC<ProductDetailInteractiveProps> =
         </div>
       )}
 
-      {/* Add to Cart Button */}
-      <div className="pt-4">
+      {/* CTA — Begär Offert instead of add-to-cart */}
+      <div className="pt-4 space-y-3">
         {isSold ? (
-          <button
-            disabled
-            className="w-full py-4 bg-stone text-ink/50 font-mono text-xs uppercase tracking-wider cursor-not-allowed"
-          >
+          <div className="w-full py-4 bg-stone text-center text-ink/50 font-mono text-xs uppercase tracking-wider">
             Detta unika exemplar är sålt
-          </button>
+          </div>
         ) : (
           <>
-            <div className="flex items-center justify-between border border-stone bg-canvas mb-3">
-              <span className="px-4 text-xs font-mono uppercase tracking-wider text-ink/70">Antal</span>
-              <div className="flex items-center">
-                <button type="button" onClick={() => setQuantity((value) => Math.max(1, value - 1))} className="h-11 w-11 text-lg text-ink hover:bg-stone-light" aria-label="Minska antal">-</button>
-                <span className="w-10 text-center font-mono text-sm">{quantity}</span>
-                <button type="button" onClick={() => setQuantity((value) => value + 1)} className="h-11 w-11 text-lg text-ink hover:bg-stone-light" aria-label="Öka antal">+</button>
-              </div>
-            </div>
-            <button
-              onClick={handleAddToCart}
-              disabled={Boolean(materials.length) && !selectedMaterial}
-              className="w-full py-4 px-6 bg-ink hover:bg-wood text-canvas font-mono text-xs uppercase tracking-widest font-semibold transition-all shadow-md flex items-center justify-center gap-2 disabled:bg-stone disabled:text-ink/50 disabled:cursor-not-allowed"
+            <Link
+              href={`/tjanster?produkt=${encodeURIComponent(product.name)}&pris=${currentPrice}`}
+              className="w-full py-4 px-6 bg-stone-900 hover:bg-stone-700 text-white font-mono text-xs uppercase tracking-widest font-semibold transition-all shadow-md flex items-center justify-center gap-2"
             >
-              {added ? (
-                <>
-                  <Check className="w-4 h-4 text-emerald-400" />
-                  <span>Tillagd i varukorgen!</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Köp Möbel & Gå Till Kassan</span>
-                </>
-              )}
-            </button>
+              <ArrowRight className="w-4 h-4" />
+              <span>Begär Offert för denna Möbel</span>
+            </Link>
+            <Link
+              href="/kontakt"
+              className="w-full py-3 px-6 border border-stone-300 hover:border-stone-900 text-stone-700 hover:text-stone-900 font-mono text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+            >
+              Frågor? Kontakta Oss
+            </Link>
           </>
         )}
       </div>
 
       <div className="border-t border-stone pt-5 space-y-2 text-xs text-ink/75 font-sans leading-relaxed">
-        <p><strong className="text-ink">Leverans:</strong> Vi återkommer med leverans eller upphämtning på Södermalm efter beställning.</p>
+        <p><strong className="text-ink">Leverans:</strong> Vi återkommer med leverans eller upphämtning i Danderyd och Storstockholm efter bekräftelse.</p>
         <p><strong className="text-ink">Betalning:</strong> Säker betalning och personlig bekräftelse från Skandiva.</p>
         <p><strong className="text-ink">Frågor om materialet?</strong> Kontakta oss innan du beställer.</p>
       </div>

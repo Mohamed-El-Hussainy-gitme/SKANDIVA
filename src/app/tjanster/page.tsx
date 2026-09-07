@@ -117,7 +117,7 @@ export default function TjansterPage() {
       {/* Hero */}
       <section className="bg-stone-900 text-white pt-24 pb-20 px-6">
         <div className="max-w-4xl mx-auto text-center space-y-5">
-          <span className="font-mono text-xs uppercase tracking-widest text-stone-400">Verkstadstjänster • Södermalm</span>
+          <span className="font-mono text-xs uppercase tracking-widest text-stone-400">Verkstadstjänster • Danderyd</span>
           <h1 className="font-serif text-5xl sm:text-6xl font-normal">Begär Kostnadsfri Offert</h1>
           <p className="text-stone-300 font-sans text-base max-w-xl mx-auto leading-relaxed">
             Fyll i formuläret nedan och bifoga gärna bilder på din möbel. Vi återkommer med en personlig offert inom 24 timmar.

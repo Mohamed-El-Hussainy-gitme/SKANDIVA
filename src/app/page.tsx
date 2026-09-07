@@ -48,7 +48,7 @@ export default async function HomePage() {
           <div className="max-w-2xl space-y-6">
             <span className="inline-flex items-center gap-2 text-[11px] font-mono uppercase tracking-widest text-stone-300">
               <span className="w-2 h-2 rounded-full bg-stone-400 animate-pulse" />
-              {settings.heroBadge || "Tapetserarverkstad • Södermalm, Stockholm"}
+              {settings.heroBadge || "Tapetserarverkstad • Danderyd, Stockholm"}
             </span>
 
             <h1 className="font-serif text-5xl sm:text-6xl lg:text-7xl text-white font-normal leading-[1.05] tracking-tight">

@@ -4,12 +4,10 @@ import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useCart } from "@/lib/store";
-import { ShoppingCart, Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown } from "lucide-react";
 
 export const Header: React.FC = () => {
   const pathname = usePathname();
-  const { itemCount } = useCart();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const isActive = (href: string) => pathname === href;
@@ -123,18 +121,20 @@ export const Header: React.FC = () => {
           </Link>
         </nav>
 
-        {/* Cart */}
+        {/* Begär Offert CTA (replaces cart) */}
         <Link
-          href="/varukorg"
-          className="relative p-2 text-stone-700 hover:text-stone-900 transition-colors"
-          aria-label="Varukorg"
+          href="/tjanster"
+          className="hidden lg:flex items-center px-5 py-2.5 bg-stone-900 hover:bg-stone-700 text-white font-mono text-[11px] uppercase tracking-widest transition-colors shadow-sm"
         >
-          <ShoppingCart className="w-6 h-6" />
-          {itemCount > 0 && (
-            <span className="absolute -top-0.5 -right-0.5 bg-stone-800 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">
-              {itemCount}
-            </span>
-          )}
+          Begär Offert
+        </Link>
+
+        {/* Mobile Begär Offert (compact) */}
+        <Link
+          href="/tjanster"
+          className="lg:hidden px-3 py-2 bg-stone-900 text-white font-mono text-[10px] uppercase tracking-widest"
+        >
+          Offert
         </Link>
       </div>
 
@@ -161,7 +161,8 @@ export const Header: React.FC = () => {
               </div>
             </div>
 
-            <Link href="/kontakt" className="py-3 px-2 text-sm font-mono uppercase tracking-widest text-stone-800" onClick={() => setMobileMenuOpen(false)}>Kontakt</Link>
+            <Link href="/kontakt" className="py-3 px-2 text-sm font-mono uppercase tracking-widest text-stone-800 border-b border-stone-100" onClick={() => setMobileMenuOpen(false)}>Kontakt</Link>
+            <Link href="/tjanster" className="mt-3 py-3 px-4 bg-stone-900 text-white text-sm font-mono uppercase tracking-widest text-center" onClick={() => setMobileMenuOpen(false)}>Begär Offert</Link>
           </div>
         </div>
       )}

@@ -12,7 +12,7 @@ export const WORKSHOP_STAGES: {
   {
     status: "mottagen",
     title: "1. Mottagen & Registrerad",
-    defaultDescription: "Möbeln har anlänt till Skandiva Atelje på Södermalm. ID-tagg fäst och grundlig besiktning påbörjad.",
+    defaultDescription: "Möbeln har anlänt till Skandiva Atelje på Danderyd. ID-tagg fäst och grundlig besiktning påbörjad.",
   },
   {
     status: "material_forbereds",

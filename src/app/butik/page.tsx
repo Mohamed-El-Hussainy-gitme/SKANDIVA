@@ -11,5 +11,5 @@ export const metadata: Metadata = {
 
 export default async function ButikPage() {
   const products = await serverDb.getProducts();
-  return <ProductArchive title="Renoverade möbler" description="Helrenoverade designklassiker, redo för ett nytt hem. Varje exemplar är unikt och kvalitetssäkrat i vår verkstad på Södermalm." products={products} breadcrumb="Butik" />;
+  return <ProductArchive title="Renoverade möbler" description="Helrenoverade designklassiker, redo för ett nytt hem. Varje exemplar är unikt och kvalitetssäkrat i vår verkstad på Danderyd." products={products} breadcrumb="Butik" />;
 }

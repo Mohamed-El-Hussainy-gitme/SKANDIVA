@@ -8,9 +8,9 @@ import { MapPin, Phone, Mail, Clock, MessageSquare } from "lucide-react";
 export const revalidate = 60; // ISR every 60s
 
 export const metadata: Metadata = {
-  title: "Kontakt — Skandiva Tapetserarverkstad Stockholm | Södermalm",
+  title: "Kontakt — Skandiva Tapetserarverkstad Stockholm | Danderyd",
   description:
-    "Kontakta Skandiva Tapetserarverkstad på Åsögatan 142 på Södermalm. Boka mötesinlämning, rådgivning eller provsittning i vår ateljé.",
+    "Kontakta Skandiva Tapetserarverkstad på Åsögatan 142 på Danderyd. Boka mötesinlämning, rådgivning eller provsittning i vår ateljé.",
 };
 
 export default async function KontaktPage() {
@@ -18,7 +18,7 @@ export default async function KontaktPage() {
 
   const companyName = settings?.companyName || "Skandiva Stockholm";
   const orgNumber = settings?.orgNumber || "559281-3942";
-  const address = settings?.address || "Åsögatan 142, 116 24 Stockholm (Södermalm)";
+  const address = settings?.address || "Åsögatan 142, 116 24 Stockholm (Danderyd)";
   const openingHours = settings?.openingHours || "Måndag – Fredag: 08:30 – 17:00 • Lördag: Enligt tidsbokning";
   const phone = settings?.phone || "08-640 22 90";
   const email = settings?.email || "kontakt@skandiva.se";
@@ -30,7 +30,7 @@ export default async function KontaktPage() {
       {/* Header */}
       <div className="border-b border-stone pb-8 space-y-3">
         <span className="font-mono text-xs uppercase tracking-widest text-wood">
-          Skandiva Tapetserarverkstad • Södermalm
+          Skandiva Tapetserarverkstad • Danderyd
         </span>
         <h1 className="font-serif text-4xl sm:text-5xl text-ink font-normal">
           Kontakta Verkstaden

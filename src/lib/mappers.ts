@@ -226,7 +226,7 @@ export function mapSettingsFromDb(row: Record<string, unknown>): SiteSettings {
     taxRate: Number(row.tax_rate ?? 0.20),
     heroHeadline: String(row.hero_headline || "Vi räddar klassiker. Vi skapar arv."),
     heroSubtitle: String(row.hero_subtitle || ""),
-    heroBadge: String(row.hero_badge || "Tapetserarverkstad • Södermalm"),
+    heroBadge: String(row.hero_badge || "Tapetserarverkstad • Danderyd"),
     heroImage: String(row.hero_image || ""),
     laminoTitle: String(row.lamino_title || "Lamino Omklädsel"),
     laminoDescription: String(row.lamino_description || ""),

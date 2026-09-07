@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState, useRef, useCallback } from "react";
 import Image from "next/image";
@@ -16,7 +16,7 @@ interface BeforeAfterSliderProps {
 export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   beforeImage,
   afterImage,
-  beforeLabel = "FÖRE (Sliten original)",
+  beforeLabel = "F�RE (Sliten original)",
   afterLabel = "EFTER (Skandiva Restaurering)",
   title,
   description,
@@ -87,7 +87,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           <div className="relative w-full h-full" style={{ width: containerRef.current ? `${containerRef.current.clientWidth}px` : "100%" }}>
             <Image
               src={beforeImage}
-              alt="Före restaurering"
+              alt="F�re restaurering"
               fill
               className="object-cover grayscale brightness-90 contrast-95"
             />
@@ -115,8 +115,8 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       </div>
 
       <div className="flex justify-between items-center mt-2 text-[11px] font-mono text-ink/60">
-        <span>← Dra reglaget för att jämföra före & efter</span>
-        <span>Skandiva Ateljéarkiv</span>
+        <span>? Dra reglaget f�r att j�mf�ra f�re & efter</span>
+        <span>Skandiva Atelj�arkiv</span>
       </div>
     </div>
   );

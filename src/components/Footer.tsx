@@ -14,7 +14,7 @@ export async function Footer() {
 
   const companyName = settings?.companyName || "Skandiva Tapetserarverkstad AB";
   const orgNumber = settings?.orgNumber || "559281-3942";
-  const address = settings?.address || "Åsögatan 142, 116 24 Södermalm, Stockholm";
+  const address = settings?.address || "Åsögatan 142, 116 24 Danderyd, Stockholm";
   const openingHours = settings?.openingHours || "Mån–Fre: 08:30 – 17:00 • Lör: Enligt tidsbokning";
   const phone = settings?.phone || "08-640 22 90";
   const email = settings?.email || "kontakt@skandiva.se";
@@ -46,7 +46,7 @@ export async function Footer() {
               </div>
             </div>
             <p className="text-xs text-stone-400 leading-relaxed font-sans max-w-md">
-              Skandiva är Stockholms specialiserade tapetserarverkstad och butik på Södermalm. Omklädsel och restaurering av svenska möbelikoner som Lamino, Pernilla, Karin och DUX med äkta Skandilock-fårskinn och exklusiva läder.
+              Skandiva är Stockholms specialiserade tapetserarverkstad och butik på Danderyd. Omklädsel och restaurering av svenska möbelikoner som Lamino, Pernilla, Karin och DUX med äkta Skandilock-fårskinn och exklusiva läder.
             </p>
             <div className="pt-2 text-xs font-mono text-stone-300 space-y-2">
               <div className="flex items-center gap-2">
@@ -118,7 +118,7 @@ export async function Footer() {
             </h5>
             <ul className="space-y-2 text-xs font-sans text-stone-400">
               <li><Link href="/om-oss" className="hover:text-white transition-colors">Om Vår Verkstad</Link></li>
-              <li><Link href="/kontakt" className="hover:text-white transition-colors">Hitta till Södermalm</Link></li>
+              <li><Link href="/kontakt" className="hover:text-white transition-colors">Hitta till Danderyd</Link></li>
               <li><Link href="/kontakt" className="hover:text-white transition-colors">Kontakta Oss</Link></li>
             </ul>
             <div className="pt-3 border-t border-stone-800">
