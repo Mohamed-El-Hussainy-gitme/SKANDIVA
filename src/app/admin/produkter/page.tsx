@@ -177,9 +177,9 @@ export default function AdminProdukterPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl text-stone-900">Butik — Renoverade Möbler</h1>
+          <h1 className="font-serif text-3xl text-stone-900">Butik — Omklädsel och kuddsats</h1>
           <p className="text-stone-500 font-sans text-sm mt-1">
-            Hantera helrenoverade möbler som säljs i butiken.
+            Hantera omklädda möbler, kuddsatser och designklassiker som säljs i butiken.
           </p>
         </div>
         <button onClick={handleStartCreate}

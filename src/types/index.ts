@@ -3,7 +3,7 @@
 // Single source of truth for all DB entities
 // ============================================================
 
-// --- Products (Renoverade Möbler i Butiken) ---
+// --- Products (Omklädsel och kuddsats i Butiken) ---
 
 export type FurnitureCategory = "Fatolj" | "Soffa" | "Stol" | "Mattor" | "Tillbehor";
 
