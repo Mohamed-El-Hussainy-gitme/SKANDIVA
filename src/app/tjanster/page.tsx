@@ -138,7 +138,7 @@ export default function TjansterPage() {
                   "Rådgivning kring läder, fårskinn & tygval",
                   "Byte av bärväv, fjädrar och stoppning",
                   "Stomjustering och trävård vid behov",
-                  "5 års full hantverksgaranti",
+                  "Skandinavisk design, tidlös elegans",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-3 text-sm font-sans text-stone-700">
                     <CheckCircle2 className="w-4 h-4 text-stone-900 shrink-0 mt-0.5" />

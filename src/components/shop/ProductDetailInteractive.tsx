@@ -114,7 +114,7 @@ export const ProductDetailInteractive: React.FC<ProductDetailInteractiveProps> =
       <div className="pt-6 border-t border-stone space-y-3 text-xs font-mono text-ink/80">
         <div className="flex items-center gap-2.5">
           <ShieldCheck className="w-4 h-4 text-wood" />
-          <span>5 års full hantverksgaranti från Skandiva</span>
+          <span>Skandinavisk design, tidlös elegans</span>
         </div>
         <div className="flex items-center gap-2.5">
           <Truck className="w-4 h-4 text-wood" />
